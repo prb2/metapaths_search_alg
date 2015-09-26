@@ -10,12 +10,15 @@ public class State {
      */
     private HashMap<String, Integer> state = null;
 
+    private int count;
+
     /**
      * Constructor to create a State with predefined values
      * @param predefinedState A hashmap containing the state information
      */
     public State(HashMap<String, Integer> predefinedState) {
         state = predefinedState;
+        count = this.calculateCount();
     }
 
     /**
@@ -23,21 +26,43 @@ public class State {
      */
     public State() {
         state = new HashMap<String, Integer>();
+        count = 0;
     }
 
     /**
-     * A state is valid if the sum of the balls at all
-     * the nodes in the state equal k
-     * @param k The total number of balls there should be
-     * @return Whether the state adheres to the valid definition
+     * Adds a node to be included in the state
+     * @param node The id of the node
+     * @param numBalls The number of balls at the node
      */
-    public boolean isValid(int k) {
+    public void addNode(String node, int numBalls) {
+        count += numBalls;
+        state.put(node, numBalls);
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    /**
+     * Counts the number of balls in this state
+     * @return The sum of all the balls at all nodes in this state
+     */
+    public int calculateCount() {
         int sum = 0;
 
         for (int value : state.values()) {
             sum += value;
         }
 
-        return sum == k;
+        return sum;
+    }
+
+    /**
+     * A state is valid if its nodes collectively contain k balls
+     * @param k The desired number of balls
+     * @return Whether the state contains exactly k balls
+     */
+    public boolean isValid(int k) {
+        return count == k;
     }
 }
