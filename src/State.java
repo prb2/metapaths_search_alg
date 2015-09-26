@@ -1,4 +1,6 @@
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A state is defined as a mapping of nodes to the
@@ -64,5 +66,27 @@ public class State {
      */
     public boolean isValid(int k) {
         return count == k;
+    }
+
+    /**
+     * A state is the goal if it only has the goal node and contains k balls
+     * @param goal The id of the goal node
+     * @param k The desired number of balls
+     * @return Whether the state is the goal state
+     */
+    public boolean isGoal(String goal, int k) {
+        // Checks that there is only one node
+        if (state.keySet().size() == 1 && state.containsKey(goal)) {
+            // Checks that the goal node has all k balls
+            if (state.get(goal) == k) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return state.toString();
     }
 }

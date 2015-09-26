@@ -1,11 +1,8 @@
-import java.util.*;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import com.sun.xml.internal.bind.v2.TODO;
-import org.graphstream.graph.*;
 import org.graphstream.graph.Graph;
-import org.graphstream.graph.implementations.SingleGraph;
+
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Stack;
 
 /**
  * Implementation of the experimental path finding algorithm
@@ -15,7 +12,7 @@ public class Algorithm {
      * Either a partial or complete solution, null until
      * process(...) is called.
      */
-    private ArrayList<Map<String, Integer>> solution = new ArrayList<Map<String, Integer>>();
+    private ArrayList<State> solution = new ArrayList<State>();
 
     /**
      * Searches the graph, attempting to move all k balls from
@@ -29,25 +26,26 @@ public class Algorithm {
      * @return Whether or not a full path was found
      */
     public Boolean process(Graph g, String start, String goal, int k, int l) {
-        HashMap<String, Integer> startState = new HashMap<>();
+        State startState = new State();
         // All of the balls are at the start node
-        startState.put(start, k);
+        startState.addNode(start, k);
         // The start state is the beginning of the path
         solution.add(startState);
 
         // TODO: Should a deque be used instead (more flexibility)?
         // Holds the set of valid states that can be further explored
-        Stack<Map<String, Integer>> availableStates = new Stack<Map<String, Integer>>();
+        Stack<State> availableStates = new Stack<State>();
         // We'll start exploring from the start state
         availableStates.add(startState);
 
         while (availableStates.size() > 0) {
             // Get the current state
-            Map<String, Integer> current = availableStates.pop();
+            State current = availableStates.pop();
             System.out.println("Current state is: " + current);
 
             // Check if current state is the goal, all balls are at the goal node
-            if (current.containsKey(goal) && current.get(goal) == k) {
+            if (current.isGoal(goal, k)) {
+                solution.add(current);
                 return true;
             }
 
@@ -59,19 +57,13 @@ public class Algorithm {
         return false;
     }
 
-    private void generateNbrStates(Map<String, Integer> current, Stack<Map<String, Integer>> states) {
-//        ArrayList<Node> bucket = new ArrayList<Node>();
-//        Iterator<Node> nbrs = current.getNeighborNodeIterator();
-//        while (nbrs.hasNext()) {
-//            bucket.add(nbrs.next());
-//        }
-//        System.out.println(bucket);
-        Map<String, Integer> temp = new HashMap<String, Integer>();
-        states.push(temp);
-
-    }
-
-    private boolean isValidState() {
+    /**
+     * Generates all the valid states that are one step away from the current state
+     * @param current The current state
+     * @param states The stack of states that will be explored
+     */
+    private void generateNbrStates(State current, Stack<State> states) {
+        // TODO: If goal state is generated, add to sol and return?
 
     }
 
@@ -81,7 +73,7 @@ public class Algorithm {
      * @return A list of mappings, where each mapping represents a
      * "step" and consists of nodes with their ball counts
      */
-    public ArrayList<Map<String, Integer>> getPath() {
+    public ArrayList<State> getPath() {
         if (solution != null) {
             return solution;
         } else {

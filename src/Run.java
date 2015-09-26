@@ -63,7 +63,9 @@ public class Run {
         }
 
         Algorithm alg = new Algorithm();
+        System.out.println("Processing graph...");
         alg.process(g, "S", "T", 5, 10);
+        System.out.println("Found a solution: " + alg.getPath());
 
 //        g.display();
     }
