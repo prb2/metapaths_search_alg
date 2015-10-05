@@ -17,18 +17,10 @@ import java.util.Random;
  */
 public class Run {
 
+    public static SingleGraph getGraph() {
+        SingleGraph g = new SingleGraph("Demo Graph 1");
 
-    /**
-     *
-     * Initializes the graph and call the alg.
-     * @param args None needed
-     */
-    public static void main(String args[]) {
-        Random rand = new Random();
-        // The graph input to the algorithm
-        Graph g = new SingleGraph("Demo Graph 1");
-
-       // The start node
+        // The start node
         g.addNode("S");
         // The target node
         g.addNode("T");
@@ -43,44 +35,41 @@ public class Run {
         g.addNode("h");
 
         // Edge(ID, start node, end node, directed?)
-        g.addEdge("Sa", "S", "a", true);
+        g.addEdge("Sa", "S", "a", false);
         g.getEdge("Sa").addAttribute("capacity", 5);
-        g.addEdge("Sb", "S", "b", true);
+        g.addEdge("Sb", "S", "b", false);
         g.getEdge("Sb").addAttribute("capacity", 3);
-        g.addEdge("Sc", "S", "c", true);
+        g.addEdge("Sc", "S", "c", false);
         g.getEdge("Sc").addAttribute("capacity", 2);
-        g.addEdge("cd", "c", "d", true);
+        g.addEdge("cd", "c", "d", false);
         g.getEdge("cd").addAttribute("capacity", 2);
-        g.addEdge("de", "d", "e", true);
+        g.addEdge("de", "d", "e", false);
         g.getEdge("de").addAttribute("capacity", 3);
-        g.addEdge("eT", "e", "T", true);
+        g.addEdge("eT", "e", "T", false);
         g.getEdge("eT").addAttribute("capacity", 2);
-        g.addEdge("bf", "b", "f", true);
+        g.addEdge("bf", "b", "f", false);
         g.getEdge("bf").addAttribute("capacity", 1);
-        g.addEdge("fe", "f", "e", true);
+        g.addEdge("fe", "f", "e", false);
         g.getEdge("fe").addAttribute("capacity", 2);
-        g.addEdge("ah", "a", "h", true);
+        g.addEdge("ah", "a", "h", false);
         g.getEdge("ah").addAttribute("capacity", 3);
-        g.addEdge("aT", "a", "T", true);
+        g.addEdge("aT", "a", "T", false);
         g.getEdge("aT").addAttribute("capacity", 1);
-        g.addEdge("hg", "h", "g", true);
+        g.addEdge("hg", "h", "g", false);
         g.getEdge("hg").addAttribute("capacity", 3);
-        g.addEdge("gT", "g", "T", true);
+        g.addEdge("gT", "g", "T", false);
         g.getEdge("gT").addAttribute("capacity", 3);
 
         for (Node n : g) {
             n.addAttribute("ui.label", n.getId());
         }
-        for (Edge e : g.getEachEdge()) {
-            e.addAttribute("ui.label", (Object)e.getAttribute("capacity"));
-        }
 
-//        metagraphs.Algorithm alg = new metagraphs.Algorithm(g);
-//        System.out.println("Processing graph...");
-//        alg.process("S", "T", 5, 10);
-//        System.out.println("Found a solution: " + alg.getPath());
+        return g;
+    }
 
-        Graph g2 = new DefaultGraph("G2");
+    public static SingleGraph getRandGraph() {
+        Random rand = new Random();
+        SingleGraph g2 = new SingleGraph("G2");
         Generator gen = new RandomGenerator(3, false, true);
         gen.addSink(g2);
         gen.begin();
@@ -94,24 +83,43 @@ public class Run {
 //            System.out.println(e.getAttribute("capacity").toString());
         }
 
-//        g2.display();
-
-
-        Prim prim = new Prim();
-        prim.init(g2);
-        prim.compute();
-
-        // Ford-Fulkerson metagraphs.Algorithm
-        FordFulkersonAlgorithm ffa = new FordFulkersonAlgorithm();
-        ffa.init(g2, "1", "8");
-        ffa.setCapacityAttribute("capacity");
-//        ffa.setAllCapacities(10);
-        ffa.compute();
-        System.out.println("The max flow for this graph is: " + ffa.getMaximumFlow());
-
+        return g2;
     }
 
-    public void bipartite() {
+
+    public static void applyFFA(SingleGraph g, String start, String target) {
+        // Ford-Fulkerson metagraphs.Algorithm
+        FordFulkersonAlgorithm ffa = new FordFulkersonAlgorithm();
+        ffa.setCapacityAttribute("capacity");
+        ffa.init(g, start, target);
+//        ffa.setAllCapacities(10);
+        ffa.compute();
+        for (Edge e : g.getEdgeSet()) {
+            String n0 = e.getNode0().getId();
+            String n1 = e.getNode1().getId();
+            double flow = ffa.getFlow(n0, n1);
+            System.out.println("Flow between " + n0 + " and " + n1 + " is: " + flow);
+            e.addAttribute("flow", flow);
+
+            // Add ledge labels to the UI
+            String edgeLabel = e.getAttribute("flow") + " / " + e.getAttribute("capacity");
+            e.addAttribute("ui.label", edgeLabel);
+        }
+        g.display();
+
+        System.out.println("Max flow: " + ffa.getMaximumFlow());
+    }
+
+    /**
+     *
+     * Initializes the graph and call the alg.
+     * @param args None needed
+     */
+    public static void main(String args[]) {
+        // The graph input to the algorithm
+        SingleGraph g = getGraph();
+
+        applyFFA(g, "S", "T");
 
     }
 }

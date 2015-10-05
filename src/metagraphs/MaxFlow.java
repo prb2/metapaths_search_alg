@@ -48,6 +48,7 @@ public class MaxFlow {
         bipartite_graph.addEdge("4-8", "4", "8", false);
         bipartite_graph.addEdge("5-8", "5", "8", false);
 
+        bipartite_graph.display();
         return bipartite_graph;
     }
 
