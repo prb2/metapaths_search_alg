@@ -1,4 +1,7 @@
+package metagraphs;
+
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,7 +18,7 @@ public class State {
     private int count;
 
     /**
-     * Constructor to create a State with predefined values
+     * Constructor to create a metagraphs.State with predefined values
      * @param predefinedState A hashmap containing the state information
      */
     public State(HashMap<String, Integer> predefinedState) {
@@ -24,7 +27,7 @@ public class State {
     }
 
     /**
-     * Constructor to create an empty State
+     * Constructor to create an empty metagraphs.State
      */
     public State() {
         state = new HashMap<String, Integer>();
@@ -39,6 +42,14 @@ public class State {
     public void addNode(String node, int numBalls) {
         count += numBalls;
         state.put(node, numBalls);
+    }
+
+    /**
+     * An iterator over the nodes in this state
+     * @return An Iterator over nodes in this state
+     */
+    public Iterator<String> getNodeIterator() {
+        return state.keySet().iterator();
     }
 
     public int getCount() {

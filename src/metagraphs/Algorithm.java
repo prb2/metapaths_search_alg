@@ -1,13 +1,27 @@
-import org.graphstream.graph.Graph;
+package metagraphs;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Stack;
+import org.graphstream.graph.Graph;
+import org.graphstream.graph.Node;
+
+import java.util.*;
 
 /**
  * Implementation of the experimental path finding algorithm
  */
 public class Algorithm {
+    /**
+     * The weighted, directed input graph
+     */
+    private Graph g;
+
+    /**
+     * Loads the graph to be searched
+     * @param input The weighted, directed input graph
+     */
+    public Algorithm(Graph input) {
+        g = input;
+    }
+
     /**
      * Either a partial or complete solution, null until
      * process(...) is called.
@@ -18,14 +32,13 @@ public class Algorithm {
      * Searches the graph, attempting to move all k balls from
      * start to goal within l steps
      *
-     * @param g The input weighted, directed graph
      * @param start The start node
      * @param goal The goal node
      * @param k The number of "balls" to move from start to goal
      * @param l The maximum path length
      * @return Whether or not a full path was found
      */
-    public Boolean process(Graph g, String start, String goal, int k, int l) {
+    public Boolean process(String start, String goal, int k, int l) {
         State startState = new State();
         // All of the balls are at the start node
         startState.addNode(start, k);
@@ -51,7 +64,7 @@ public class Algorithm {
 
             System.out.println("Previously available states: " + availableStates);
             // Generate and stack all valid states one step away from current state
-            generateNbrStates(current, availableStates);
+            generateValidNbrStates(current, availableStates);
             System.out.println("With newly added states: " + availableStates);
         }
         return false;
@@ -62,9 +75,18 @@ public class Algorithm {
      * @param current The current state
      * @param states The stack of states that will be explored
      */
-    private void generateNbrStates(State current, Stack<State> states) {
-        // TODO: If goal state is generated, add to sol and return?
+    private void generateValidNbrStates(State current, Stack<State> states) {
+/*        HashMap<> potential = new HashMap<>();
+        Iterator<String> nodeIDs = current.getNodeIterator();
 
+        while (nodeIDs.hasNext()) {
+            Node nbr = g.getNode(nodeIDs.next());
+            nbr.
+            potential.put(nbr.getId(), nbr.)
+        }*/
+
+
+        // TODO: If goal state is generated, add to sol and return?
     }
 
     /**
