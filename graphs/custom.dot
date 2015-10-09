@@ -15,7 +15,7 @@ graph {
 	"c" -- "d" ["capacity"=2];
 	"d" -- "e" ["capacity"=3];
 	"e" -- "T" ["capacity"=2];
-	"b" -- "f" ["capacity"=1];
+	"b" -- "f" ["capacity"=2];
 	"f" -- "e" ["capacity"=2];
 	"a" -- "h" ["capacity"=3];
 	"a" -- "T" ["capacity"=1];

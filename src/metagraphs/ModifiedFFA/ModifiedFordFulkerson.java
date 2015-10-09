@@ -120,6 +120,7 @@ public class ModifiedFordFulkerson extends FlowAlgorithmBase {
 
                     if (o == target) {
                         System.out.println("Found a path: " + path + "-->" + o + " with flow: " + newMin);
+                        addPathToTree(path, target, newMin);
                     }
                     return newMin;
                 }
@@ -129,4 +130,9 @@ public class ModifiedFordFulkerson extends FlowAlgorithmBase {
 		path.removeLast();
 		return 0;
 	}
+
+    protected void addPathToTree(LinkedList<Node> path, Node target, double flow) {
+
+
+    }
 }
