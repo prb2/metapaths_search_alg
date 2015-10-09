@@ -1,9 +1,7 @@
-package metagraphs;
+package metagraphs.Sandbox;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * A state is defined as a mapping of nodes to the
@@ -18,7 +16,7 @@ public class State {
     private int count;
 
     /**
-     * Constructor to create a metagraphs.State with predefined values
+     * Constructor to create a metagraphs.Playground.State with predefined values
      * @param predefinedState A hashmap containing the state information
      */
     public State(HashMap<String, Integer> predefinedState) {
@@ -27,7 +25,7 @@ public class State {
     }
 
     /**
-     * Constructor to create an empty metagraphs.State
+     * Constructor to create an empty metagraphs.Playground.State
      */
     public State() {
         state = new HashMap<String, Integer>();

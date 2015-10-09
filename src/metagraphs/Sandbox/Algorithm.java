@@ -1,7 +1,6 @@
-package metagraphs;
+package metagraphs.Sandbox;
 
 import org.graphstream.graph.Graph;
-import org.graphstream.graph.Node;
 
 import java.util.*;
 
@@ -83,7 +82,7 @@ public class Algorithm {
             Node nbr = g.getNode(nodeIDs.next());
             nbr.
             potential.put(nbr.getId(), nbr.)
-        }*/
+    }*/
 
 
         // TODO: If goal state is generated, add to sol and return?

@@ -1,15 +1,16 @@
-package metagraphs;
+package metagraphs.Sandbox;
 
-import org.graphstream.algorithm.Prim;
+import org.graphstream.algorithm.AStar;
 import org.graphstream.algorithm.flow.FordFulkersonAlgorithm;
-import org.graphstream.algorithm.generator.FullGenerator;
 import org.graphstream.algorithm.generator.Generator;
 import org.graphstream.algorithm.generator.RandomGenerator;
 import org.graphstream.graph.*;
 import org.graphstream.graph.Graph;
-import org.graphstream.graph.implementations.DefaultGraph;
 import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.stream.file.FileSink;
+import org.graphstream.stream.file.FileSinkDOT;
 
+import java.io.IOException;
 import java.util.Random;
 
 /**
@@ -67,10 +68,10 @@ public class Run {
         return g;
     }
 
-    public static SingleGraph getRandGraph() {
+    public static SingleGraph getRandGraph(Boolean directed) {
         Random rand = new Random();
         SingleGraph g2 = new SingleGraph("G2");
-        Generator gen = new RandomGenerator(3, false, true);
+        Generator gen = new RandomGenerator(3, false, directed);
         gen.addSink(g2);
         gen.begin();
         for (int i = 0; i < 12; i++) {
@@ -86,17 +87,23 @@ public class Run {
         return g2;
     }
 
+    public static void writeGraph(Graph g, String name) throws IOException {
+        FileSink fs = new FileSinkDOT();
+        fs.writeAll(g, name);
+    }
 
     public static void applyFFA(SingleGraph g, String start, String target) {
-        // Ford-Fulkerson metagraphs.Algorithm
+        // Ford-Fulkerson metagraphs.Playground.Algorithm
         FordFulkersonAlgorithm ffa = new FordFulkersonAlgorithm();
         ffa.setCapacityAttribute("capacity");
         ffa.init(g, start, target);
 //        ffa.setAllCapacities(10);
         ffa.compute();
+
         for (Edge e : g.getEdgeSet()) {
             String n0 = e.getNode0().getId();
             String n1 = e.getNode1().getId();
+            ffa.setAllCapacities(10.0);
             double flow = ffa.getFlow(n0, n1);
             System.out.println("Flow between " + n0 + " and " + n1 + " is: " + flow);
             e.addAttribute("flow", flow);
@@ -108,6 +115,11 @@ public class Run {
         g.display();
 
         System.out.println("Max flow: " + ffa.getMaximumFlow());
+
+        AStar astar = new AStar();
+        astar.init(g);
+        astar.compute("S", "T");
+//        System.out.println(astar.);
     }
 
     /**
@@ -115,11 +127,17 @@ public class Run {
      * Initializes the graph and call the alg.
      * @param args None needed
      */
-    public static void main(String args[]) {
+    public static void main(String args[]) throws IOException {
         // The graph input to the algorithm
+        // Custom graph
         SingleGraph g = getGraph();
 
-        applyFFA(g, "S", "T");
+        writeGraph(g, "graphs/custom.dot");
+
+        // get random graph
+//        SingleGraph g = getRandGraph(false);
+
+//        applyFFA(g, "S", "T");
 
     }
 }

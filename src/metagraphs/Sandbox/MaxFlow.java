@@ -1,9 +1,8 @@
-package metagraphs;
+package metagraphs.Sandbox;
 
 
 
 import org.graphstream.algorithm.flow.FordFulkersonAlgorithm;
-import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.implementations.SingleGraph;
 
