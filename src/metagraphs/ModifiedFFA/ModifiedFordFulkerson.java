@@ -155,48 +155,58 @@ public class ModifiedFordFulkerson extends FlowAlgorithmBase {
     }
 
     public Graph constructUnionGraph() {
-        SingleGraph union = new SingleGraph("Solutions Graph");
+		SingleGraph union = new SingleGraph("Solutions Graph");
 
-        for (int i = 0; i < saved.size(); i++) {
-            ArrayList<String> pathNodes = saved.get(i).getPathNodes();
-            double pathFlow = saved.get(i).getPathFlow();
+		for (int i = 0; i < saved.size(); i++) {
+			ArrayList<String> pathNodes = saved.get(i).getPathNodes();
+			double pathFlow = saved.get(i).getPathFlow();
 
-            for(int n = 0; n < pathNodes.size(); n++) {
-                String name = pathNodes.get(n);
-                Node current = union.getNode(name);
-                if (current == null) {
-                    // Make a new node, set it's paths attribute
-                    System.out.println(name + " was not found, needs to be made.");
-                    union.addNode(name);
-                    Node newNode = union.getNode(name);
-                    newNode.setAttribute("paths", "" + i);
+			if (pathFlow == desiredFlow) {
+				if (pathNodes.size() <= maxPathLen) {
+					for (int n = 0; n < pathNodes.size(); n++) {
+						String name = pathNodes.get(n);
+						Node current = union.getNode(name);
+						if (current == null) {
+							// Make a new node, set it's paths attribute
+							System.out.println(name + " was not found, needs to be made.");
+							union.addNode(name);
+							Node newNode = union.getNode(name);
+							newNode.setAttribute("paths", "" + i);
 
-                    if (n > 0) {
-                        // If this node isn't the start, get its parent and make an edge
-                        Node parent = union.getNode(pathNodes.get(n-1));
-                        String edgeID = "(" + parent.getId() + ";" + name + ")";
-                        union.addEdge(edgeID, parent, newNode, true);
-                    }
+							if (n > 0) {
+								// If this node isn't the start, get its parent and make an edge
+								Node parent = union.getNode(pathNodes.get(n - 1));
+								String edgeID = "(" + parent.getId() + ";" + name + ")";
+								union.addEdge(edgeID, parent, newNode, true);
+							}
 
-                } else if (n > 0) {
-                    // Node already exists in the graph, update its paths attribute, and add an edge
-                    current.setAttribute("paths", current.getAttribute("paths") + ", " + i);
-                    Node parent = union.getNode(pathNodes.get(n-1));
-                    String edgeID = "(" + parent.getId() + ";" + name + ")";
-                    if (union.getEdge(edgeID) == null) {
-                        // Edge doesn't exist yet, so make it
-                        union.addEdge(edgeID, parent, current, true);
-                    }
-                } else {
-                    // Update the start node's paths attribute
-                    current.setAttribute("paths", current.getAttribute("paths") + ", " + i);
-                }
-            }
-        }
+						} else if (n > 0) {
+							// Node already exists in the graph, update its paths attribute, and add an edge
+							current.setAttribute("paths", current.getAttribute("paths") + ", " + i);
+							Node parent = union.getNode(pathNodes.get(n - 1));
+							String edgeID = "(" + parent.getId() + ";" + name + ")";
+							if (union.getEdge(edgeID) == null) {
+								// Edge doesn't exist yet, so make it
+								union.addEdge(edgeID, parent, current, true);
+							}
+						} else {
+							// Update the start node's paths attribute
+							current.setAttribute("paths", current.getAttribute("paths") + ", " + i);
+						}
+					}
+                    System.out.println("Included path: " + i + ", since flow: " + desiredFlow + " and length <= " + maxPathLen);
+				} else {
+					System.out.println("Ignored path: " + i + ", since it was longer than " + maxPathLen);
+				}
+			} else {
+				System.out.println("Ignored path: " + i + ", since its flow was not " + desiredFlow);
+			}
 
-        for (Edge e : union.getEdgeSet()) {
-            e.setAttribute("ui.label", flowGraph.getEdge(e.getId()).getAttribute("ui.label").toString());
-        }
-        return union;
+		}
+
+		for (Edge e : union.getEdgeSet()) {
+			e.setAttribute("ui.label", flowGraph.getEdge(e.getId()).getAttribute("ui.label").toString());
+		}
+		return union;
     }
 }

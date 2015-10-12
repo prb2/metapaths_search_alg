@@ -29,7 +29,7 @@ public class SampleRun {
 
 
         System.out.println("######### Modified FFA");
-        ModifiedFordFulkerson mffa = new ModifiedFordFulkerson(5.0, g.getNodeCount());
+        ModifiedFordFulkerson mffa = new ModifiedFordFulkerson(3.0, g.getNodeCount());
         mffa.init(g, "S", "T");
 //        mffa.init(g, "a", "h");
         mffa.setCapacityAttribute("capacity");
@@ -65,7 +65,7 @@ public class SampleRun {
             label += n.getAttribute("paths");
             n.setAttribute("ui.label", label);
         }
-        g.display();
+//        g.display();
         unionG.display();
     }
 }
