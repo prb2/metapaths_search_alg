@@ -28,6 +28,10 @@ public class SampleRun {
 //        fs.readAll("graphs/simple.dot");
         fs.readAll("graphs/RG1.dot");
 
+//        g.display();
+//        for (Node n : g) {
+//            System.out.println(n + " has out: " + n.getOutDegree() + " and in: " + n.getInDegree());
+//        }
 
         Graph unionG = runMFFA(g, "0", "40", 2.0, g.getNodeCount(), "capacity");
 

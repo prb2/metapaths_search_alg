@@ -99,7 +99,7 @@ public class ModifiedFordFulkerson extends FlowAlgorithmBase {
 		double minCf;
 		LinkedList<Node> path = new LinkedList<Node>();
 
-		while ((minCf = findPath(path, source, sink)) > 0) {
+		while ((minCf = findPath(path, source, sink, flowGraph)) > 0) {
 			for (int i = 1; i < path.size(); i++) {
 				Node u = path.get(i - 1);
 				Node v = path.get(i);
@@ -120,7 +120,7 @@ public class ModifiedFordFulkerson extends FlowAlgorithmBase {
         maximumFlow = flow;
 	}
 
-	protected double findPath(LinkedList<Node> path, Node source, Node target) {
+	protected double findPath(LinkedList<Node> path, Node source, Node target, Graph g) {
 		path.addLast(source);
 
 		if (source == target) {
@@ -131,17 +131,21 @@ public class ModifiedFordFulkerson extends FlowAlgorithmBase {
 		double minCf;
 
 		for (int i = 0; i < source.getDegree(); i++) {
-			Edge e = source.getEdge(i);
+            Edge e = source.getEdge(i);
 			Node o = e.getOpposite(source);
-
-//			System.out.println("\t " + getFlow(source, o));
-			if (getCapacity(source, o) - getFlow(source, o) > 0
-					&& !path.contains(o)) {
-				if ((minCf = findPath(path, o, target)) > 0) {
-                    double newMin = Math.min(minCf, getCapacity(source, o) - getFlow(source, o));
-                    return newMin;
+            if (g.getEdge("(" + source.getId() + ";" + o.getId() + ")") != null) {
+//    			System.out.println("\t " + getFlow(source, o));
+                if (getCapacity(source, o) - getFlow(source, o) > 0
+                        && !path.contains(o)) {
+                    if ((minCf = findPath(path, o, target, g)) > 0) {
+                        return Math.min(minCf, getCapacity(source, o) - getFlow(source, o));
+                    }
                 }
-			}
+            } else {
+                // This direction of the edge is not in the graph, so don't consider it
+                continue;
+            }
+
 		}
 
 		path.removeLast();
@@ -208,7 +212,7 @@ public class ModifiedFordFulkerson extends FlowAlgorithmBase {
 			try {
                 e.setAttribute("ui.label", flowGraph.getEdge(e.getId()).getAttribute("ui.label").toString());
             } catch (NullPointerException error) {
-                System.out.println(e.getId());
+                System.out.println("Tried to include edge: " + e.getId() + " which is not in the input graph.");
             }
 		}
 		return union;

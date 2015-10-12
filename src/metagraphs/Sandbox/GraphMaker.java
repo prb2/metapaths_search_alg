@@ -41,6 +41,6 @@ public class GraphMaker {
 
     public void writeGraph(Graph g, String name) throws IOException {
         FileSink fs = new FileSinkDOT();
-        fs.writeAll(g, name);
+        fs.writeAll(g, "graphs/" + name);
     }
 }
