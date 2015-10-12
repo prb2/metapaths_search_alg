@@ -1,5 +1,6 @@
 package metagraphs.ModifiedFFA;
 
+import metagraphs.Sandbox.GraphMaker;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
@@ -14,38 +15,24 @@ import java.util.Random;
  * Creates a sample graph to
  */
 public class SampleRun {
+    static GraphMaker gmaker = new GraphMaker();
     public static void main(String args[]) throws IOException {
-        Random rand = new Random();
-        Graph g = new SingleGraph("Custom");
+//        Graph g1 = gmaker.makeGraph("Random Graph 1", 40, 4, "capacity", 1, 20, false);
+//        gmaker.writeGraph(g1, "RG1.dot");
+
+        Graph g = new SingleGraph("RG1");
         FileSourceDOT fs = new FileSourceDOT();
         fs.addSink(g);
-        fs.readAll("graphs/custom.dot");
+//        fs.readAll("graphs/custom.dot");
 //        fs.readAll("graphs/branched.dot");
 //        fs.readAll("graphs/simple.dot");
+        fs.readAll("graphs/RG1.dot");
 
 
-        System.out.println("######### Modified FFA");
-        ModifiedFordFulkerson mffa = new ModifiedFordFulkerson(3.0, g.getNodeCount());
-        mffa.init(g, "S", "T");
-        mffa.setCapacityAttribute("capacity");
-        mffa.compute();
-        for (Edge e : g.getEdgeSet()) {
-            Node u = e.getNode0();
-            Node v = e.getNode1();
-            e.setAttribute("ui.label", mffa.getFlow(u, v) + " / " +
-                    e.getAttribute("capacity").toString());
-        }
-        System.out.println("Modified max flow: " + mffa.getMaximumFlow());
-
-        mffa.printPaths();
-        Graph unionG = mffa.constructUnionGraph();
+        Graph unionG = runMFFA(g, "0", "40", 2.0, g.getNodeCount(), "capacity");
 
         for (Node n : unionG) {
             System.out.println(n.getId() + " is in paths: " + n.getAttribute("paths"));
-        }
-
-        for (Node n : g) {
-            n.setAttribute("ui.label", n.getId());
         }
         for (Node n : unionG) {
             String label = "";
@@ -53,7 +40,26 @@ public class SampleRun {
             label += n.getAttribute("paths");
             n.setAttribute("ui.label", label);
         }
+        g.display();
         unionG.display();
+    }
+
+    public static Graph runMFFA(Graph g, String start, String target, double k, int l, String capacityAttr) {
+        ModifiedFordFulkerson mffa = new ModifiedFordFulkerson(k, l);
+        mffa.setCapacityAttribute(capacityAttr);
+        mffa.init(g, start, target);
+        mffa.compute();
+
+        System.out.println("MFFA max flow: " + mffa.getMaximumFlow());
+        mffa.printPaths();
+
+        for (Edge e : g.getEdgeSet()) {
+            Node u = e.getNode0();
+            Node v = e.getNode1();
+            e.setAttribute("ui.label", mffa.getFlow(u, v) + " / " +
+                    e.getAttribute("capacity").toString());
+        }
+        return mffa.constructUnionGraph();
     }
 }
 

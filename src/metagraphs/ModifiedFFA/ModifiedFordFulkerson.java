@@ -107,9 +107,9 @@ public class ModifiedFordFulkerson extends FlowAlgorithmBase {
 				setFlow(u, v, getFlow(u, v) + minCf);
 				setFlow(v, u, getFlow(v, u) - minCf);
 			}
-
             saved.add(new GraphSegment(path, minCf));
-			path.clear();
+            System.out.println("Path added: " + path);
+            path.clear();
 		}
 
 		double flow = 0;
@@ -117,7 +117,7 @@ public class ModifiedFordFulkerson extends FlowAlgorithmBase {
 		for (int i = 0; i < source.getDegree(); i++)
 			flow += getFlow(source, source.getEdge(i).getOpposite(source));
 
-		maximumFlow = flow;
+        maximumFlow = flow;
 	}
 
 	protected double findPath(LinkedList<Node> path, Node source, Node target) {
@@ -205,7 +205,11 @@ public class ModifiedFordFulkerson extends FlowAlgorithmBase {
 		}
 
 		for (Edge e : union.getEdgeSet()) {
-			e.setAttribute("ui.label", flowGraph.getEdge(e.getId()).getAttribute("ui.label").toString());
+			try {
+                e.setAttribute("ui.label", flowGraph.getEdge(e.getId()).getAttribute("ui.label").toString());
+            } catch (NullPointerException error) {
+                System.out.println(e.getId());
+            }
 		}
 		return union;
     }
