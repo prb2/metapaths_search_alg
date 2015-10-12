@@ -19,9 +19,9 @@ public class SampleRun {
         Graph g = new SingleGraph("Custom");
         FileSourceDOT fs = new FileSourceDOT();
         fs.addSink(g);
-//        fs.readAll("graphs/custom.dot");
+        fs.readAll("graphs/custom.dot");
 //        fs.readAll("graphs/branched.dot");
-        fs.readAll("graphs/simple.dot");
+//        fs.readAll("graphs/simple.dot");
 
 //        for (Edge e : g.getEdgeSet()) {
 //            e.setAttribute("capacity", rand.nextInt(10)+3);
@@ -30,7 +30,8 @@ public class SampleRun {
 
         System.out.println("######### Modified FFA");
         ModifiedFordFulkerson mffa = new ModifiedFordFulkerson(5.0, g.getNodeCount());
-        mffa.init(g, "a", "h");
+        mffa.init(g, "S", "T");
+//        mffa.init(g, "a", "h");
         mffa.setCapacityAttribute("capacity");
         mffa.compute();
         for (Edge e : g.getEdgeSet()) {
