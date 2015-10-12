@@ -23,15 +23,10 @@ public class SampleRun {
 //        fs.readAll("graphs/branched.dot");
 //        fs.readAll("graphs/simple.dot");
 
-//        for (Edge e : g.getEdgeSet()) {
-//            e.setAttribute("capacity", rand.nextInt(10)+3);
-//        }
-
 
         System.out.println("######### Modified FFA");
         ModifiedFordFulkerson mffa = new ModifiedFordFulkerson(3.0, g.getNodeCount());
         mffa.init(g, "S", "T");
-//        mffa.init(g, "a", "h");
         mffa.setCapacityAttribute("capacity");
         mffa.compute();
         for (Edge e : g.getEdgeSet()) {
@@ -49,13 +44,6 @@ public class SampleRun {
             System.out.println(n.getId() + " is in paths: " + n.getAttribute("paths"));
         }
 
-/*        System.out.println("######### Original FFA");
-        FordFulkersonAlgorithm ffa = new FordFulkersonAlgorithm();
-        ffa.init(g, "a", "h");
-        ffa.setCapacityAttribute("capacity");
-        ffa.compute();
-        System.out.println("Original max flow: " + ffa.getMaximumFlow());*/
-
         for (Node n : g) {
             n.setAttribute("ui.label", n.getId());
         }
@@ -65,7 +53,14 @@ public class SampleRun {
             label += n.getAttribute("paths");
             n.setAttribute("ui.label", label);
         }
-//        g.display();
         unionG.display();
     }
 }
+
+/*        System.out.println("######### Original FFA");
+        FordFulkersonAlgorithm ffa = new FordFulkersonAlgorithm();
+        ffa.init(g, "a", "h");
+        ffa.setCapacityAttribute("capacity");
+        ffa.compute();
+        System.out.println("Original max flow: " + ffa.getMaximumFlow());*/
+//        g.display();
