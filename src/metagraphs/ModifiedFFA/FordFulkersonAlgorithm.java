@@ -102,7 +102,7 @@ public class FordFulkersonAlgorithm extends FlowAlgorithmBase {
 		path.addLast(source);
 		
 		if (source == target) {
-			System.out.println(path.toString() + " - " );
+//			System.out.println(path.toString() + " - " );
 
 			return Double.MAX_VALUE;
 		}
@@ -113,7 +113,7 @@ public class FordFulkersonAlgorithm extends FlowAlgorithmBase {
 			Edge e = source.getEdge(i);
 			Node o = e.getOpposite(source);
 
-			System.out.println("\t " + getFlow(source, o));
+//			System.out.println("\t " + getFlow(source, o));
 			if (getCapacity(source, o) - getFlow(source, o) > 0
 					&& !path.contains(o)) {
 				if ((minCf = findPath(path, o, target)) > 0)

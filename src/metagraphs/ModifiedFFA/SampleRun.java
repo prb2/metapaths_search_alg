@@ -20,15 +20,17 @@ public class SampleRun {
         FileSourceDOT fs = new FileSourceDOT();
         fs.addSink(g);
 //        fs.readAll("graphs/custom.dot");
-        fs.readAll("graphs/branched.dot");
+//        fs.readAll("graphs/branched.dot");
+        fs.readAll("graphs/simple.dot");
 
-        for (Edge e : g.getEdgeSet()) {
-            e.setAttribute("capacity", rand.nextInt(10)+3);
-        }
+//        for (Edge e : g.getEdgeSet()) {
+//            e.setAttribute("capacity", rand.nextInt(10)+3);
+//        }
 
 
+        System.out.println("######### Modified FFA");
         ModifiedFordFulkerson mffa = new ModifiedFordFulkerson(5.0, g.getNodeCount());
-        mffa.init(g, "C00031", "C00078");
+        mffa.init(g, "a", "h");
         mffa.setCapacityAttribute("capacity");
         mffa.compute();
         for (Edge e : g.getEdgeSet()) {
@@ -37,14 +39,32 @@ public class SampleRun {
             e.setAttribute("ui.label", mffa.getFlow(u, v) + " / " +
                     e.getAttribute("capacity").toString());
         }
-        System.out.println("Max flow: " + mffa.getMaximumFlow());
+        System.out.println("Modified max flow: " + mffa.getMaximumFlow());
 
-        Graph solution = mffa.constructUnionGraph();
+        mffa.printPaths();
+        Graph unionG = mffa.constructUnionGraph();
 
+        for (Node n : unionG) {
+            System.out.println(n.getId() + " is in paths: " + n.getAttribute("paths"));
+        }
+
+/*        System.out.println("######### Original FFA");
+        FordFulkersonAlgorithm ffa = new FordFulkersonAlgorithm();
+        ffa.init(g, "a", "h");
+        ffa.setCapacityAttribute("capacity");
+        ffa.compute();
+        System.out.println("Original max flow: " + ffa.getMaximumFlow());*/
 
         for (Node n : g) {
             n.setAttribute("ui.label", n.getId());
         }
-//        g.display();
+        for (Node n : unionG) {
+            String label = "";
+            label += n.getId() + " is in paths: ";
+            label += n.getAttribute("paths");
+            n.setAttribute("ui.label", label);
+        }
+        g.display();
+        unionG.display();
     }
 }

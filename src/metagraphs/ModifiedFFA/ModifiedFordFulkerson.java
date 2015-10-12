@@ -31,16 +31,20 @@
  */
 package metagraphs.ModifiedFFA;
 
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.ElementNotFoundException;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
+import org.graphstream.graph.implementations.AbstractEdge;
 import org.graphstream.graph.implementations.DefaultGraph;
 import org.graphstream.graph.implementations.SingleGraph;
 import sun.awt.image.ImageWatched;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 /**
  * The Ford-Fulkerson algorithm to compute maximum flow.
@@ -52,9 +56,10 @@ import java.util.LinkedList;
  *             maximum flow in the graph
  */
 public class ModifiedFordFulkerson extends FlowAlgorithmBase {
-    private ArrayList<LinkedList<Node>> solutions = new ArrayList<LinkedList<Node>>();
+    private ArrayList<GraphSegment> saved;
     private double desiredFlow;
     private int maxPathLen;
+    private int index = 0;
 
     public ModifiedFordFulkerson(double k, int l) {
         desiredFlow = k;
@@ -70,6 +75,7 @@ public class ModifiedFordFulkerson extends FlowAlgorithmBase {
 	public void compute() {
 		Node source = flowGraph.getNode(sourceId);
 		Node sink = flowGraph.getNode(sinkId);
+        saved = new ArrayList<GraphSegment>();
 
 		if (source == null)
 			throw new ElementNotFoundException("node \"%s\"", sourceId);
@@ -102,6 +108,7 @@ public class ModifiedFordFulkerson extends FlowAlgorithmBase {
 				setFlow(v, u, getFlow(v, u) - minCf);
 			}
 
+            saved.add(new GraphSegment(path, minCf));
 			path.clear();
 		}
 
@@ -132,16 +139,6 @@ public class ModifiedFordFulkerson extends FlowAlgorithmBase {
 					&& !path.contains(o)) {
 				if ((minCf = findPath(path, o, target)) > 0) {
                     double newMin = Math.min(minCf, getCapacity(source, o) - getFlow(source, o));
-
-                    if (o == target) {
-                        if (newMin == desiredFlow && path.size() <= maxPathLen) {
-                            System.out.println("Found a path: " + path + "-->"
-                                    + o + " with flow: " + newMin + ". Will be added to solutions.");
-                            solutions.add(path);
-                        } else {
-                            System.out.println("Found a path, but will NOT be added to solutions.");
-                        }
-                    }
                     return newMin;
                 }
 			}
@@ -151,12 +148,47 @@ public class ModifiedFordFulkerson extends FlowAlgorithmBase {
 		return 0;
 	}
 
-    protected Graph constructUnionGraph() {
-        System.out.println(solutions.get(0));
-//        for (LinkedList<Node> path : solutions) {
-//            // add to union
-//        }
+    public void printPaths() {
+        for (int i = 0; i < saved.size(); i++) {
+            System.out.println(saved.get(i));
+        }
+    }
 
-        return null;
+    public Graph constructUnionGraph() {
+        SingleGraph union = new SingleGraph("Solutions Graph");
+
+        for (int i = 0; i < saved.size(); i++) {
+            ArrayList<String> pathNodes = saved.get(i).getPathNodes();
+            double pathFlow = saved.get(i).getPathFlow();
+
+            for(int n = 0; n < pathNodes.size(); n++) {
+                String name = pathNodes.get(n);
+                try {
+                    Node aNode = union.getNode(name);
+                    if (aNode == null) {
+                        throw new NullPointerException();
+                    } else if (n > 0) {
+                        Node parent = union.getNode(pathNodes.get(n - 1));
+                        String edgeID = "(" + parent.getId() + ";" + name + ")";
+                        union.addEdge(edgeID, parent, aNode);
+                        union.getEdge(edgeID).setAttribute("ui.label", flowGraph.getEdge(edgeID).getAttribute("ui.label").toString());
+                    }
+                    aNode.setAttribute("paths", aNode.getAttribute("paths") + ", " + i);
+                } catch (NullPointerException e) {
+                    System.out.println(name + " was not found, needs to be made.");
+                    union.addNode(name);
+                    Node newNode = union.getNode(name);
+                    newNode.setAttribute("paths", "" + i);
+                    if (n > 0) {
+                        Node parent = union.getNode(pathNodes.get(n-1));
+                        String edgeID = "(" + parent.getId() + ";" + name + ")";
+                        union.addEdge(edgeID, parent, newNode);
+                        union.getEdge(edgeID).setAttribute("ui.label", flowGraph.getEdge(edgeID).getAttribute("ui.label").toString());
+                    }
+                }
+            }
+        }
+
+        return union;
     }
 }
