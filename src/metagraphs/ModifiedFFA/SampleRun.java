@@ -27,7 +27,7 @@ public class SampleRun {
         }
 
 
-        ModifiedFordFulkerson mffa = new ModifiedFordFulkerson();
+        ModifiedFordFulkerson mffa = new ModifiedFordFulkerson(5.0, g.getNodeCount());
         mffa.init(g, "C00031", "C00078");
         mffa.setCapacityAttribute("capacity");
         mffa.compute();
@@ -37,8 +37,14 @@ public class SampleRun {
             e.setAttribute("ui.label", mffa.getFlow(u, v) + " / " +
                     e.getAttribute("capacity").toString());
         }
-        System.out.printf("Max flow: " + mffa.getMaximumFlow());
-//        g.display();
+        System.out.println("Max flow: " + mffa.getMaximumFlow());
 
+        Graph solution = mffa.constructUnionGraph();
+
+
+        for (Node n : g) {
+            n.setAttribute("ui.label", n.getId());
+        }
+//        g.display();
     }
 }

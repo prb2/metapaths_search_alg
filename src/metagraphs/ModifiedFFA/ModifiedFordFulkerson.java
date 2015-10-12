@@ -33,8 +33,13 @@ package metagraphs.ModifiedFFA;
 
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.ElementNotFoundException;
+import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
+import org.graphstream.graph.implementations.DefaultGraph;
+import org.graphstream.graph.implementations.SingleGraph;
+import sun.awt.image.ImageWatched;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**
@@ -47,6 +52,16 @@ import java.util.LinkedList;
  *             maximum flow in the graph
  */
 public class ModifiedFordFulkerson extends FlowAlgorithmBase {
+    private ArrayList<LinkedList<Node>> solutions = new ArrayList<LinkedList<Node>>();
+    private double desiredFlow;
+    private int maxPathLen;
+
+    public ModifiedFordFulkerson(double k, int l) {
+        desiredFlow = k;
+        maxPathLen = l;
+        System.out.println("Looking for paths with " + k + " flow and no longer than " + l + " nodes in length.");
+    }
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -119,8 +134,13 @@ public class ModifiedFordFulkerson extends FlowAlgorithmBase {
                     double newMin = Math.min(minCf, getCapacity(source, o) - getFlow(source, o));
 
                     if (o == target) {
-                        System.out.println("Found a path: " + path + "-->" + o + " with flow: " + newMin);
-                        addPathToTree(path, target, newMin);
+                        if (newMin == desiredFlow && path.size() <= maxPathLen) {
+                            System.out.println("Found a path: " + path + "-->"
+                                    + o + " with flow: " + newMin + ". Will be added to solutions.");
+                            solutions.add(path);
+                        } else {
+                            System.out.println("Found a path, but will NOT be added to solutions.");
+                        }
                     }
                     return newMin;
                 }
@@ -131,8 +151,12 @@ public class ModifiedFordFulkerson extends FlowAlgorithmBase {
 		return 0;
 	}
 
-    protected void addPathToTree(LinkedList<Node> path, Node target, double flow) {
+    protected Graph constructUnionGraph() {
+        System.out.println(solutions.get(0));
+//        for (LinkedList<Node> path : solutions) {
+//            // add to union
+//        }
 
-
+        return null;
     }
 }

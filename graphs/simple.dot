@@ -1,0 +1,18 @@
+graph {
+	"a" ["ui.label"="a"];
+	"b" ["ui.label"="b"];
+	"c" ["ui.label"="c"];
+	"d" ["ui.label"="d"];
+	"e" ["ui.label"="e"];
+	"f" ["ui.label"="f"];
+	"g" ["ui.label"="g"];
+	"h" ["ui.label"="h"];
+	"a" -- "b" ["capacity"=5];
+	"a" -- "c" ["capacity"=3];
+	"b" -- "d" ["capacity"=2];
+	"c" -- "e" ["capacity"=2];
+	"d" -- "f" ["capacity"=3];
+	"e" -- "g" ["capacity"=2];
+	"f" -- "h" ["capacity"=2];
+	"g" -- "h" ["capacity"=2];
+}
