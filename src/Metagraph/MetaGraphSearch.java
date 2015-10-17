@@ -1,6 +1,7 @@
 package Metagraph;
 
 import org.graphstream.graph.Graph;
+import org.graphstream.graph.Node;
 import scala.util.parsing.combinator.testing.Str;
 
 import java.util.HashMap;
@@ -18,9 +19,7 @@ public class MetaGraphSearch {
      */
     private MetaGraph meta;
 
-    public void constructMetaGraph(Graph g, String s, String t, int desiredFlow) {
-        Stack<MetaGraph> explored = new Stack<MetaGraph>();
-
+    public void constructMetaGraph(Graph inputG, String s, String t, int desiredFlow) {
         meta = new MetaGraph("MetaGraph");
 
         // Create the start state
@@ -28,7 +27,15 @@ public class MetaGraphSearch {
         // All the flow is in the starting node
         state.put(s, desiredFlow);
         // Add the start node to the MG
-        meta.addMetaNode(s, desiredFlow, state);
+        meta.addMetaNode(new MetaNode(s, state));
+
+        // Find reachable states
+        findReachable(inputG, meta.getMetaNode(s));
+    }
+
+    private void findReachable(Graph inputG, MetaNode node) {
+        Stack<MetaGraph> explored = new Stack<MetaGraph>();
+
 
     }
 

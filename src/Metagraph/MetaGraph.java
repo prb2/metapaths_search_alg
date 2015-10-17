@@ -19,38 +19,30 @@ public class MetaGraph {
      */
     Map<String, Map<String, Integer>> stateMap;
 
-    Graph g;
+    private Graph g;
+    private int flow;
 
-    protected MetaGraph(String id) {
+    protected MetaGraph(String id, int desiredFlow) {
         g = new SingleGraph(id);
+        flow = desiredFlow;
     }
 
-    public void addMetaNode(String id, int flow, Map<String, Integer> state) {
-        if (validateState(flow, state)) {
-            g.addNode(id);
-            Node node = g.getNode(id);
-            node.setAttribute("state", state.toString());
+    public void addMetaNode(MetaNode metanode) {
+        if (metanode.isValid(flow)) {
+            g.addNode(metanode.getId());
+            Node node = g.getNode(metanode.getId());
+            node.setAttribute("state", metanode.getState().toString());
         } else {
             System.out.println("State was not valid. Node was not added to meta-graph.");
         }
     }
 
-    /**
-     * A meta-node is only valid if the sum of the nodes' flow is equal to
-     * the required flow.
-     * @param requiredFlow The specified flow need for each node in the meta graph
-     */
-    protected Boolean validateState(int requiredFlow, Map<String, Integer> state) {
-        int stateFlow = 0;
 
-        for (Map.Entry<String, Integer> entry : state.entrySet()) {
-            stateFlow += entry.getValue();
-        }
-
-        return stateFlow != requiredFlow;
+    public MetaNode getMetaNode(String metaNodeID) {
+        return new MetaNode(metaNodeID, stateMap.get(metaNodeID));
     }
 
-    public Map<String, Integer> getState(String nodeID) {
-        return stateMap.get(nodeID);
+    public Map<String, Integer> getState(String metaNodeID) {
+        return stateMap.get(metaNodeID);
     }
 }
