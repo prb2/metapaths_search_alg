@@ -7,6 +7,7 @@ import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.graph.implementations.SingleNode;
 import scala.util.regexp.Base;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -42,7 +43,18 @@ public class MetaGraph {
         return new MetaNode(metaNodeID, stateMap.get(metaNodeID));
     }
 
-    public Map<String, Integer> getState(String metaNodeID) {
-        return stateMap.get(metaNodeID);
+    /**
+     * Get the nodes that are contained in the specified metanode
+     * @param metaNodeID
+     * @return
+     */
+    public ArrayList<Node> getInnerNodes(String metaNodeID) {
+        ArrayList<Node> innerNodes = new ArrayList<>();
+
+        for (String n : stateMap.get(metaNodeID).keySet()) {
+            innerNodes.add(g.getNode(n));
+        }
+
+        return innerNodes;
     }
 }

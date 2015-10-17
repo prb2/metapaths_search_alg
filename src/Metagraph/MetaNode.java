@@ -1,5 +1,8 @@
 package Metagraph;
 
+import org.graphstream.graph.Node;
+
+import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -28,6 +31,7 @@ public class MetaNode {
 
         return stateFlow != requiredFlow;
     }
+
     public Map<String, Integer> getState() {
         return state;
     }
