@@ -24,10 +24,11 @@ public class MetaRun {
 
 //        g.display();
 
-        run(g, "S", "T");
+        run(g, "S", "T", 2);
     }
 
-    private static void run(Graph g, String start, String target) {
-
+    private static void run(Graph g, String start, String target, int desiredFlow) {
+        MetaGraphSearch mgs = new MetaGraphSearch();
+        mgs.constructMetaGraph(g, start, target, desiredFlow);
     }
 }

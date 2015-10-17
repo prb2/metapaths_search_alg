@@ -1,13 +1,12 @@
 package Metagraph;
 
+import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
+import scala.Int;
 import scala.util.parsing.combinator.testing.Str;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 /**
  * Constructs a meta-graph in which nodes contain mappings of input graph nodes
@@ -19,12 +18,16 @@ public class MetaGraphSearch {
      * a.k.a MG
      */
     private MetaGraph meta;
+    private Graph base;
     private Stack<MetaNode> explored;
     private int flow;
+    private String targetID;
 
     public void constructMetaGraph(Graph inputG, String s, String t, int desiredFlow) {
         meta = new MetaGraph("MetaGraph", desiredFlow);
+        base = inputG;
         flow = desiredFlow;
+        targetID = t;
         explored = new Stack<MetaNode>();
 
         // Create the start state
@@ -35,30 +38,82 @@ public class MetaGraphSearch {
         meta.addMetaNode(new MetaNode(s, state));
 
         // Find reachable states
-        findReachable(inputG, meta.getMetaNode(s));
+        explored.push(meta.getMetaNode(s));
+        populateMetaGraph();
     }
 
-    private void findReachable(Graph inputG, MetaNode node) {
-        explored.push(node);
-        MetaNode nbr = findMetaNbr(node);
-        findMetaNbr(nbr);
+    private void populateMetaGraph() {
+        while (!explored.empty()) {
+            MetaNode current = explored.pop();
+            if (current.isTarget(targetID, flow)) {
+                break;
+            } else {
+                // Find all neighbors of this meta node
+                MetaNode newNbr = findMetaNbr(current);
+                explored.push(newNbr);
+                System.out.println("Added new meta nbr: " + newNbr.getState().toString());
+
+                // Maintain the reachable nbrs to be visited later
+//                for (MetaNode mn : metaNbrs) {
+//                    explored.push(mn);
+//                }
+            }
+        }
 
     }
 
     private MetaNode findMetaNbr(MetaNode current) {
+        // Get the node from original graph that are in this meta node
         ArrayList<Node> innerNodes = meta.getInnerNodes(current.getId());
-        int neededFlow = flow;
-        ArrayList<String> potential = new ArrayList<>();
+        Map<String, Integer> currentState = current.getState();
+        ArrayList<Map<String, Integer>> subStates = new ArrayList<Map<String, Integer>>();
+        HashMap<String, Integer> newState = new HashMap<String, Integer>();
 
-        while (neededFlow > 0) {
-            // Keep adding nbrs of the inner nodes until the necessary flow has been achieved
+        for (Node innerNode : innerNodes) {
+            // Distribute the flow among the inner nodes' neighbors
+            subStates.add(distributeFlow(innerNode, currentState.get(innerNode.getId())));
         }
-        // distribute the flow among potential nodes
-        // Create the state
-        // make a new metanode
+
+        // Consolidate the substates in to a single state
+        for (Map<String, Integer> subState : subStates) {
+            newState.putAll(subState);
+        }
+        // Make a new metanode with this state
+        MetaNode newMetaNode = new MetaNode(newState.keySet().toString(), newState);
+
         // add metanode to metagraph
-        return null;
+        meta.addMetaNode(newMetaNode);
+
+        return newMetaNode;
     }
+
+    private Map<String, Integer> distributeFlow(Node parent, int flow) {
+        // Currently only returning the first suitable distribution
+        HashMap<String, Integer> distribution = new HashMap<String, Integer>();
+        int remainingFlow = flow;
+        Iterator<Node> nbrIter = parent.getNeighborNodeIterator();
+        while (remainingFlow > 0) {
+            if (nbrIter.hasNext()) {
+                Node nbr = nbrIter.next();
+                Edge edge = parent.getEdgeBetween(nbr);
+                int capacity = edge.getAttribute("capacity");
+
+                if (capacity >= remainingFlow) {
+                    distribution.put(nbr.getId(), remainingFlow);
+                    remainingFlow = 0;
+                } else {
+                    distribution.put(nbr.getId(), capacity);
+                    remainingFlow -= capacity;
+                }
+            } else {
+                return null;
+                // TODO: Not possible to distribute this flow to node's neighbors
+                // TODO: Reached a terminus, will have to discard this whole metanode
+            }
+        }
+        return distribution;
+    }
+
 
     public void findMetaPath() {
         if (meta == null) {

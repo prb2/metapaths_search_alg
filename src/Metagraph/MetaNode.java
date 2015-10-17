@@ -22,14 +22,24 @@ public class MetaNode {
      * the required flow.
      * @param requiredFlow The specified flow need for each node in the meta graph
      */
-    protected Boolean isValid(int requiredFlow) {
+    public Boolean isValid(int requiredFlow) {
         int stateFlow = 0;
 
+        System.out.println("Checking validity of: " + state.toString());
         for (Map.Entry<String, Integer> entry : state.entrySet()) {
             stateFlow += entry.getValue();
         }
 
         return stateFlow != requiredFlow;
+    }
+
+    public Boolean isTarget(String targetID, int targetFlow) {
+        if (state.containsKey(targetID)) {
+            if (state.get(targetID) == targetFlow) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Map<String, Integer> getState() {
