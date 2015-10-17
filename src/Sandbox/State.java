@@ -1,4 +1,4 @@
-package metagraphs.Sandbox;
+package Sandbox;
 
 import java.util.HashMap;
 import java.util.Iterator;

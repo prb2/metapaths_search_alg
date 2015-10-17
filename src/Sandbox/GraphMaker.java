@@ -1,4 +1,4 @@
-package metagraphs.Sandbox;
+package Sandbox;
 
 import org.graphstream.algorithm.generator.Generator;
 import org.graphstream.algorithm.generator.RandomGenerator;

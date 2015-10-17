@@ -1,4 +1,4 @@
-package metagraphs.ModifiedFFA;
+package ModifiedFFA;
 
 import org.graphstream.graph.Node;
 

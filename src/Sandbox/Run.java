@@ -1,4 +1,4 @@
-package metagraphs.Sandbox;
+package Sandbox;
 
 import org.graphstream.algorithm.AStar;
 import org.graphstream.algorithm.flow.FordFulkersonAlgorithm;

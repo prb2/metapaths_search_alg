@@ -1,4 +1,4 @@
-package metagraphs.Sandbox;
+package Sandbox;
 
 import org.graphstream.graph.Graph;
 

@@ -1,39 +1,37 @@
-package metagraphs.ModifiedFFA;
+package ModifiedFFA;
 
-import metagraphs.Sandbox.GraphMaker;
+import Sandbox.GraphMaker;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.stream.file.FileSourceDOT;
 
-import java.io.IOError;
 import java.io.IOException;
-import java.util.Random;
 
 /**
  * Creates a sample graph to
  */
-public class SampleRun {
+public class LargeSampleRun {
     static GraphMaker gmaker = new GraphMaker();
     public static void main(String args[]) throws IOException {
-//        Graph g1 = gmaker.makeGraph("Random Graph 1", 40, 4, "capacity", 1, 20, false);
-//        gmaker.writeGraph(g1, "RG1.dot");
+//        Graph g1 = gmaker.makeGraph("Large Random Graph", 5000, 4, "capacity", 1, 20, false);
+//        gmaker.writeGraph(g1, "LargeRG.dot");
 
-        Graph g = new SingleGraph("RG1");
+        Graph g = new SingleGraph("LargeRG");
         FileSourceDOT fs = new FileSourceDOT();
         fs.addSink(g);
 //        fs.readAll("graphs/custom.dot");
 //        fs.readAll("graphs/branched.dot");
 //        fs.readAll("graphs/simple.dot");
-        fs.readAll("graphs/RG1.dot");
+        fs.readAll("graphs/LargeRG.dot");
 
 //        g.display();
 //        for (Node n : g) {
 //            System.out.println(n + " has out: " + n.getOutDegree() + " and in: " + n.getInDegree());
 //        }
 
-        Graph unionG = runMFFA(g, "0", "40", 2.0, g.getNodeCount(), "capacity");
+        Graph unionG = runMFFA(g, "0", "335", 2.0, g.getNodeCount(), "capacity");
 
         for (Node n : unionG) {
             System.out.println(n.getId() + " is in paths: " + n.getAttribute("paths"));
@@ -44,7 +42,7 @@ public class SampleRun {
             label += n.getAttribute("paths");
             n.setAttribute("ui.label", label);
         }
-        g.display();
+//        g.display();
         unionG.display();
     }
 

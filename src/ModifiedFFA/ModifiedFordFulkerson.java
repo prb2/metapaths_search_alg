@@ -29,22 +29,16 @@
  * The fact that you are presently reading this means that you have had
  * knowledge of the CeCILL-C and LGPL licenses and that you accept their terms.
  */
-package metagraphs.ModifiedFFA;
+package ModifiedFFA;
 
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.ElementNotFoundException;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
-import org.graphstream.graph.implementations.AbstractEdge;
-import org.graphstream.graph.implementations.DefaultGraph;
 import org.graphstream.graph.implementations.SingleGraph;
-import sun.awt.image.ImageWatched;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 
 /**
  * The Ford-Fulkerson algorithm to compute maximum flow.
@@ -165,7 +159,8 @@ public class ModifiedFordFulkerson extends FlowAlgorithmBase {
 			ArrayList<String> pathNodes = saved.get(i).getPathNodes();
 			double pathFlow = saved.get(i).getPathFlow();
 
-			if (pathFlow == desiredFlow) {
+//			if (pathFlow == desiredFlow) {
+            if (pathFlow >= desiredFlow) {
 				if (pathNodes.size() <= maxPathLen) {
 					for (int n = 0; n < pathNodes.size(); n++) {
 						String name = pathNodes.get(n);
