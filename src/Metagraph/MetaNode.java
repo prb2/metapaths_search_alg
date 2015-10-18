@@ -10,9 +10,9 @@ import java.util.Map;
  */
 public class MetaNode {
     private String id;
-    private Map<String, Integer> state;
+    private Map<String, Double> state;
 
-    public MetaNode(String name, Map<String, Integer> counts) {
+    public MetaNode(String name, Map<String, Double> counts) {
         id = name;
         state = counts;
     }
@@ -22,18 +22,19 @@ public class MetaNode {
      * the required flow.
      * @param requiredFlow The specified flow need for each node in the meta graph
      */
-    public Boolean isValid(int requiredFlow) {
-        int stateFlow = 0;
+    public Boolean isValid(double requiredFlow) {
+        double stateFlow = 0;
 
-        System.out.println("Checking validity of: " + state.toString());
-        for (Map.Entry<String, Integer> entry : state.entrySet()) {
+//        System.out.println("Checking validity of: " + state.toString());
+        for (Map.Entry<String, Double> entry : state.entrySet()) {
             stateFlow += entry.getValue();
         }
 
-        return stateFlow != requiredFlow;
+//        System.out.println("State flow: " + stateFlow + " Required flow: " + requiredFlow);
+        return stateFlow == requiredFlow;
     }
 
-    public Boolean isTarget(String targetID, int targetFlow) {
+    public Boolean isTarget(String targetID, double targetFlow) {
         if (state.containsKey(targetID)) {
             if (state.get(targetID) == targetFlow) {
                 return true;
@@ -42,11 +43,11 @@ public class MetaNode {
         return false;
     }
 
-    public Map<String, Integer> getState() {
+    public Map<String, Double> getState() {
         return state;
     }
 
-    public void setState(Map<String, Integer> state) {
+    public void setState(Map<String, Double> state) {
         this.state = state;
     }
 

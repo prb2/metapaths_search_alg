@@ -16,15 +16,16 @@ public class MetaRun {
         Graph g = new SingleGraph("Input Graph");
         FileSourceDOT fs = new FileSourceDOT();
         fs.addSink(g);
-        fs.readAll("graphs/custom.dot");
+        fs.readAll("graphs/simpler.dot");
 
         for (Edge e : g.getEdgeSet()) {
             e.setAttribute("ui.label", e.getAttribute("capacity").toString());
+//            System.out.println(e.isDirected());
         }
 
-//        g.display();
+        g.display();
 
-        run(g, "S", "T", 2);
+        run(g, "a", "d", 4);
     }
 
     private static void run(Graph g, String start, String target, int desiredFlow) {
