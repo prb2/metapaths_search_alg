@@ -54,11 +54,13 @@ public class MetaGraphSearch {
                 System.out.println("Finding new meta nbr for: " + current.getState().toString());
                 MetaNode newNbr = findMetaNbr(current);
                 // add metanode to metagraph
-                meta.addMetaNode(newNbr);
-                meta.addDirectedMetaEdge(current.getId(), newNbr.getId());
-                explored.push(newNbr);
+                if (meta.addMetaNode(newNbr)) {
+                    meta.addDirectedMetaEdge(current.getId(), newNbr.getId());
+                    explored.push(newNbr);
+                    System.out.println("Added new meta nbr: " + newNbr.getState().toString());
+                } else {
+                }
 
-                System.out.println("Added new meta nbr: " + newNbr.getState().toString());
 
                 // Maintain the reachable nbrs to be visited later
 //                for (MetaNode mn : metaNbrs) {
@@ -70,7 +72,7 @@ public class MetaGraphSearch {
     }
 
     private MetaNode findMetaNbr(MetaNode current) {
-        // Get the node from original graph that are in this meta node
+        // Get the nodes from original graph that are in this meta node
         ArrayList<Node> innerNodes = getInnerNodes(current.getId());
         System.out.println("Inner nodes: " + innerNodes);
         Map<String, Double> currentState = current.getState();
@@ -84,7 +86,16 @@ public class MetaGraphSearch {
 
         // Consolidate the substates in to a single state
         for (Map<String, Double> subState : subStates) {
-            newState.putAll(subState);
+            for (Map.Entry<String, Double> stateNode : subState.entrySet()) {
+                String node = stateNode.getKey();
+                if (newState.containsKey(node)) {
+                    // If this state node is already in the merged state, add the value to the existing value
+                    newState.put(node, newState.get(node) + stateNode.getValue());
+                } else {
+                    // If the state node is not already in the merged state, put it in
+                    newState.put(node, stateNode.getValue());
+                }
+            }
         }
         // Make a new metanode with this state
         MetaNode newMetaNode = new MetaNode(newState.keySet().toString(), newState);
@@ -100,18 +111,37 @@ public class MetaGraphSearch {
         Node parent = base.getNode(parentID);
 
         System.out.println("Parent is: " + parent);
-        for (Edge e : parent.getEachLeavingEdge()) {
-            Node nbr = e.getTargetNode();
-            while (remainingFlow > 0) {
-                System.out.println("Looking at nbr: " + nbr);
+        System.out.println("Parent has this many nbrs: " + parent.getLeavingEdgeSet().size());
+        while (remainingFlow > 0) {
+            for (Edge e : parent.getEachLeavingEdge()) {
+                System.out.println("Remaining flow: " + remainingFlow);
+                Node nbr = e.getTargetNode();
                 Edge edge = parent.getEdgeBetween(nbr);
                 double capacity = edge.getAttribute("capacity");
+                System.out.println("Looking at nbr: " + nbr + " with capacity: " + capacity);
 
                 if (capacity >= remainingFlow) {
-                    distribution.put(nbr.getId(), remainingFlow);
+                    System.out.println("Enough or more than enough flow");
+                    System.out.println("Flow at nbr before: " + distribution.get(nbr.getId()));
+                    System.out.println("Sending " + remainingFlow + " from " + parent + " to " + nbr);
+                    if (distribution.containsKey(nbr.getId())) {
+                        System.out.println("Some flow was already at nbr");
+                        distribution.put(nbr.getId(), distribution.get(nbr.getId()) + remainingFlow);
+                    } else {
+                        distribution.put(nbr.getId(),remainingFlow);
+                    }
+                    System.out.println("Flow at nbr after: " + distribution.get(nbr.getId()));
                     remainingFlow = 0;
                 } else {
-                    distribution.put(nbr.getId(), capacity);
+                    System.out.println("Not enough flow, keep looking");
+                    System.out.println("Flow at " + nbr + " before: " + distribution.get(nbr.getId()));
+                    System.out.println("Sending " + capacity + " from " + parent + " to " + nbr);
+                    if (distribution.containsKey(nbr.getId())) {
+                        distribution.put(nbr.getId(), distribution.get(nbr.getId()) + capacity);
+                    } else {
+                        distribution.put(nbr.getId(), capacity);
+                    }
+                    System.out.println("Flow at " + nbr + " after: " + distribution.get(nbr.getId()));
                     remainingFlow -= capacity;
                 }
             }

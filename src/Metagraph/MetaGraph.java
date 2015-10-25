@@ -32,15 +32,17 @@ public class MetaGraph {
         metaNodes = new HashMap<>();
     }
 
-    public void addMetaNode(MetaNode metanode) {
+    public Boolean addMetaNode(MetaNode metanode) {
         if (metanode.isValid(flow)) {
             internal.addNode(metanode.getId());
             Node node = internal.getNode(metanode.getId());
             node.setAttribute("state", metanode.getState().toString());
             metaNodes.put(metanode.getId(), metanode);
             stateMap.put(metanode.getId(), metanode.getState());
+            return true;
         } else {
-            System.out.println("State was not valid. Node was not added to meta-graph.");
+            System.err.println("State was not valid. Node was not added to meta-graph.");
+            return false;
         }
     }
 
@@ -52,6 +54,7 @@ public class MetaGraph {
         for (Node n : internal) {
             n.setAttribute("ui.label", stateMap.get(n.getId()).toString());
         }
+        //TODO: Uncomment to display meta graph
         internal.display();
     }
 
