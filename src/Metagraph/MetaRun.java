@@ -16,7 +16,7 @@ public class MetaRun {
         Graph g = new SingleGraph("Input Graph");
         FileSourceDOT fs = new FileSourceDOT();
         fs.addSink(g);
-        fs.readAll("graphs/simpler.dot");
+        fs.readAll("graphs/simple.dot");
 
         for (Edge e : g.getEdgeSet()) {
             e.setAttribute("ui.label", e.getAttribute("capacity").toString());
@@ -25,7 +25,7 @@ public class MetaRun {
 
 //        g.display();
 
-        run(g, "a", "d", 2);
+        run(g, "a", "h", 4);
     }
 
     private static void run(Graph g, String start, String target, int desiredFlow) {

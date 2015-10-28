@@ -41,7 +41,7 @@ public class MetaGraph {
             stateMap.put(metanode.getId(), metanode.getState());
             return true;
         } else {
-            System.err.println("State was not valid. Node was not added to meta-graph.");
+            System.out.println("State was not valid. Node was not added to meta-graph.");
             return false;
         }
     }
