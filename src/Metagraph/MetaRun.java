@@ -25,7 +25,7 @@ public class MetaRun {
 
 //        g.display();
 
-        run(g, "a", "d", 4);
+        run(g, "a", "d", 2);
     }
 
     private static void run(Graph g, String start, String target, int desiredFlow) {
