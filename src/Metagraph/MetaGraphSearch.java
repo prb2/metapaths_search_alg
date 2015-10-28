@@ -7,6 +7,8 @@ import scala.Int;
 import scala.util.parsing.combinator.testing.Str;
 
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Constructs a meta-graph in which nodes contain mappings of input graph nodes
@@ -46,20 +48,14 @@ public class MetaGraphSearch {
     private void populateMetaGraph() {
         while (!explored.empty()) {
             MetaNode current = explored.pop();
+            System.out.println("Popped from stack: " + current.getState());
             if (current.isTarget(targetID, flow)) {
                 System.out.println("Current is target");
                 break;
             } else {
                 // Find all neighbors of this meta node
                 System.out.println("Finding new meta nbr for: " + current.getState().toString());
-                MetaNode newNbr = findMetaNbr(current);
-                // add metanode to metagraph
-                if (meta.addMetaNode(newNbr)) {
-                    meta.addDirectedMetaEdge(current.getId(), newNbr.getId());
-                    explored.push(newNbr);
-                    System.out.println("Added new meta nbr: " + newNbr.getState().toString());
-                } else {
-                }
+                findMetaNbrs(current);
 
 
                 // Maintain the reachable nbrs to be visited later
@@ -72,115 +68,65 @@ public class MetaGraphSearch {
     }
 
 
-    private MetaNode findMetaNbr(MetaNode current) {
-        ArrayList<Node> innerNodes = getInnerNodes(current.getId());
+    private void findMetaNbrs(MetaNode current) {
+        Queue<Node> innerNodes = getInnerNodes(current.getId());
+        Map<String, Double> currentState = current.getState();
+
+        Node innerNode = innerNodes.poll();
+        while (innerNode != null) {
+            double totalFlow = currentState.get(innerNode.getId());
+            double remainingFlow = totalFlow; // since no moves have been made yet
+            Map<String, Double> newState = new HashMap<>();
+            Queue<Edge> nbrEdges = getInnerNodeNbrEdges(innerNode);
+
+            // recursively finds potential metanode nbrs and adds them to the graph if they are valid
+            recursiveMetaNodeCompletion(newState, nbrEdges, totalFlow, remainingFlow, current);
+            // make new meta node with newState
+            innerNode = innerNodes.poll();
+        }
     }
 
-    private void recursiveMetaNodeCompletion() {
+    private void recursiveMetaNodeCompletion(Map<String, Double> newState, Queue<Edge> nbrEdges, double totalFlow, double remainingFlow, MetaNode parent) {
+        if (remainingFlow == 0.0 || nbrEdges.isEmpty()) {
+            MetaNode potential = new MetaNode(newState.toString(), newState);
+            if (potential.isValid(totalFlow)) {
+                // add metanode to metagraph
+                if (meta.addMetaNode(potential)) {
+                    meta.addDirectedMetaEdge(parent.getId(), potential.getId());
+                    explored.push(potential);
+                    System.out.println("Added new meta nbr: " + potential.getState().toString());
+                } else {
+                }
+            } else {
+                System.out.println("Reached end of recursion, but invalid state: " + newState);
+            }
+            return;
+        }
 
+        Edge nbrEdge = nbrEdges.poll(); // know it's not empty
+
+        // get the first nbr and its capacity
+        Node nbrNode = nbrEdge.getTargetNode();
+        double nbrCapacity = nbrEdge.getAttribute("capacity");
+
+        // While we have flow to move, or we hit the capacity
+        // explore availiable states from move i balls to nbr
+        for (double i = 0.0; i <= Math.min(remainingFlow, nbrCapacity); i += 1.0) {
+            newState.put(nbrNode.getId(), i); // add this flow move to the state
+            System.out.println("Found new state: " + newState);
+            remainingFlow -= i;
+            recursiveMetaNodeCompletion(newState, nbrEdges, totalFlow, remainingFlow, parent);
+        }
     }
 
-
-//
-//    private MetaNode findMetaNbr(MetaNode current) {
-//        // Get the nodes from original graph that are in this meta node
-//        ArrayList<Node> innerNodes = getInnerNodes(current.getId());
-//        System.out.println("Inner nodes: " + innerNodes);
-//        Map<String, Double> currentState = current.getState();
-//        ArrayList<Map<String, Double>> subStates = new ArrayList<>();
-//        HashMap<String, Double> newState = new HashMap<>();
-//
-//        for (Node innerNode : innerNodes) {
-//            double nodeFlow = currentState.get(innerNode.getId());
-//            // Distribute the flow among the inner nodes' neighbors
-//
-//            for (int i = 0; i < nodeFlow; i++) {
-//                System.out.println("Trying to distribute flow with: " + innerNode.getId() + " and " + (nodeFlow-i) + "out of " + nodeFlow);
-//                subStates.add(distributeFlow(innerNode.getId(), nodeFlow - i));
-//            }
-//
-//        }
-//
-//        // Consolidate the substates in to a single state
-//        for (Map<String, Double> subState : subStates) {
-//            for (Map.Entry<String, Double> stateNode : subState.entrySet()) {
-//                String node = stateNode.getKey();
-//                if (newState.containsKey(node)) {
-//                    // If this state node is already in the merged state, add the value to the existing value
-//                    newState.put(node, newState.get(node) + stateNode.getValue());
-//                } else {
-//                    // If the state node is not already in the merged state, put it in
-//                    newState.put(node, stateNode.getValue());
-//                }
-//            }
-//        }
-//        // Make a new metanode with this state
-//        MetaNode newMetaNode = new MetaNode(newState.keySet().toString(), newState);
-//        System.out.println("Newly found metanode: " + newMetaNode.getState().toString());
-//
-//        return newMetaNode;
-//    }
-//
-//    private Map<String, Double> distributeFlow(String parentID, double flow) {
-//        // Currently only returning the first suitable distribution
-//        HashMap<String, Double> distribution = new HashMap<>();
-//        double remainingFlow = flow;
-//        Node parent = base.getNode(parentID);
-//
-//        System.out.println("Parent is: " + parent);
-//        System.out.println("Parent has this many nbrs: " + parent.getLeavingEdgeSet().size());
-//        for (Edge e : parent.getEachLeavingEdge()) {
-//            if (remainingFlow > 0) {
-//                System.out.println("Remaining flow: " + remainingFlow);
-//                Node nbr = e.getTargetNode();
-//                Edge edge = parent.getEdgeBetween(nbr);
-//                double capacity = edge.getAttribute("capacity");
-//                if (capacity == 0) {
-//                    break;
-//                }
-////                System.out.println("Looking at nbr: " + nbr + " with capacity: " + capacity);
-//
-//                if (capacity >= remainingFlow) {
-////                    System.out.println("Enough or more than enough flow");
-////                    System.out.println("Flow at nbr before: " + distribution.get(nbr.getId()));
-////                    System.out.println("Sending " + remainingFlow + " from " + parent + " to " + nbr);
-//                    if (distribution.containsKey(nbr.getId())) {
-////                        System.out.println("Some flow was already at nbr");
-//                        distribution.put(nbr.getId(), distribution.get(nbr.getId()) + remainingFlow);
-//                    } else {
-//                        distribution.put(nbr.getId(),remainingFlow);
-//                    }
-////                    edge.setAttribute("capacity", capacity - remainingFlow);
-////                    System.out.println("Flow at nbr after: " + distribution.get(nbr.getId()));
-//                    remainingFlow = 0;
-//                } else {
-////                    System.out.println("Not enough flow, keep looking");
-////                    System.out.println("Flow at " + nbr + " before: " + distribution.get(nbr.getId()));
-////                    System.out.println("Sending " + capacity + " from " + parent + " to " + nbr);
-//                    if (distribution.containsKey(nbr.getId())) {
-//                        distribution.put(nbr.getId(), distribution.get(nbr.getId()) + capacity);
-//                    } else {
-//                        distribution.put(nbr.getId(), capacity);
-//                    }
-////                    edge.setAttribute("capacity", capacity - capacity);
-////                    System.out.println("Flow at " + nbr + " after: " + distribution.get(nbr.getId()));
-//                    remainingFlow -= capacity;
-//                }
-//            }
-//        }
-//        System.out.println(distribution);
-//        return distribution;
-//        // TODO: Not possible to distribute this flow to node's neighbors
-//        // TODO: Reached a terminus, will have to discard this whole metanode
-//    }
 
     /**
      * Get the nodes that are contained in the specified metanode
      * @param metaNodeID
      * @return
      */
-    public ArrayList<Node> getInnerNodes(String metaNodeID) {
-        ArrayList<Node> innerNodes = new ArrayList<>();
+    public Queue<Node> getInnerNodes(String metaNodeID) {
+        Queue<Node> innerNodes = new LinkedBlockingQueue<>();
 
         for (String n : meta.getMetaNode(metaNodeID).getState().keySet()) {
 
@@ -189,6 +135,15 @@ public class MetaGraphSearch {
         }
 
         return innerNodes;
+    }
+
+    public Queue<Edge> getInnerNodeNbrEdges(Node innerNode) {
+        Queue<Edge> nbrEdges = new LinkedBlockingQueue<>();
+
+        for (Edge e: innerNode.getEachLeavingEdge()) {
+            nbrEdges.add(e);
+        }
+        return nbrEdges;
     }
 
     public void findMetaPath() {
