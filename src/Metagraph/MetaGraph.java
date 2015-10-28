@@ -55,7 +55,7 @@ public class MetaGraph {
             n.setAttribute("ui.label", stateMap.get(n.getId()).toString());
         }
         //TODO: Uncomment to display meta graph
-        internal.display();
+//        internal.display();
     }
 
     public MetaNode getMetaNode(String metaNodeID) {

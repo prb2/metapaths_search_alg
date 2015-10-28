@@ -80,8 +80,14 @@ public class MetaGraphSearch {
         HashMap<String, Double> newState = new HashMap<>();
 
         for (Node innerNode : innerNodes) {
+            double nodeFlow = currentState.get(innerNode.getId());
             // Distribute the flow among the inner nodes' neighbors
-            subStates.add(distributeFlow(innerNode.getId(), currentState.get(innerNode.getId())));
+
+            for (int i = 0; i < nodeFlow; i++) {
+                System.out.println("Trying to distribute flow with: " + innerNode.getId() + " and " + (nodeFlow-i) + "out of " + nodeFlow);
+                subStates.add(distributeFlow(innerNode.getId(), nodeFlow - i));
+            }
+
         }
 
         // Consolidate the substates in to a single state
@@ -112,43 +118,49 @@ public class MetaGraphSearch {
 
         System.out.println("Parent is: " + parent);
         System.out.println("Parent has this many nbrs: " + parent.getLeavingEdgeSet().size());
-        while (remainingFlow > 0) {
-            for (Edge e : parent.getEachLeavingEdge()) {
+        for (Edge e : parent.getEachLeavingEdge()) {
+            if (remainingFlow > 0) {
                 System.out.println("Remaining flow: " + remainingFlow);
                 Node nbr = e.getTargetNode();
                 Edge edge = parent.getEdgeBetween(nbr);
                 double capacity = edge.getAttribute("capacity");
-                System.out.println("Looking at nbr: " + nbr + " with capacity: " + capacity);
+                if (capacity == 0) {
+                    break;
+                }
+//                System.out.println("Looking at nbr: " + nbr + " with capacity: " + capacity);
 
                 if (capacity >= remainingFlow) {
-                    System.out.println("Enough or more than enough flow");
-                    System.out.println("Flow at nbr before: " + distribution.get(nbr.getId()));
-                    System.out.println("Sending " + remainingFlow + " from " + parent + " to " + nbr);
+//                    System.out.println("Enough or more than enough flow");
+//                    System.out.println("Flow at nbr before: " + distribution.get(nbr.getId()));
+//                    System.out.println("Sending " + remainingFlow + " from " + parent + " to " + nbr);
                     if (distribution.containsKey(nbr.getId())) {
-                        System.out.println("Some flow was already at nbr");
+//                        System.out.println("Some flow was already at nbr");
                         distribution.put(nbr.getId(), distribution.get(nbr.getId()) + remainingFlow);
                     } else {
                         distribution.put(nbr.getId(),remainingFlow);
                     }
-                    System.out.println("Flow at nbr after: " + distribution.get(nbr.getId()));
+//                    edge.setAttribute("capacity", capacity - remainingFlow);
+//                    System.out.println("Flow at nbr after: " + distribution.get(nbr.getId()));
                     remainingFlow = 0;
                 } else {
-                    System.out.println("Not enough flow, keep looking");
-                    System.out.println("Flow at " + nbr + " before: " + distribution.get(nbr.getId()));
-                    System.out.println("Sending " + capacity + " from " + parent + " to " + nbr);
+//                    System.out.println("Not enough flow, keep looking");
+//                    System.out.println("Flow at " + nbr + " before: " + distribution.get(nbr.getId()));
+//                    System.out.println("Sending " + capacity + " from " + parent + " to " + nbr);
                     if (distribution.containsKey(nbr.getId())) {
                         distribution.put(nbr.getId(), distribution.get(nbr.getId()) + capacity);
                     } else {
                         distribution.put(nbr.getId(), capacity);
                     }
-                    System.out.println("Flow at " + nbr + " after: " + distribution.get(nbr.getId()));
+//                    edge.setAttribute("capacity", capacity - capacity);
+//                    System.out.println("Flow at " + nbr + " after: " + distribution.get(nbr.getId()));
                     remainingFlow -= capacity;
                 }
             }
         }
-    return distribution;
-    // TODO: Not possible to distribute this flow to node's neighbors
-    // TODO: Reached a terminus, will have to discard this whole metanode
+        System.out.println(distribution);
+        return distribution;
+        // TODO: Not possible to distribute this flow to node's neighbors
+        // TODO: Reached a terminus, will have to discard this whole metanode
     }
 
     /**

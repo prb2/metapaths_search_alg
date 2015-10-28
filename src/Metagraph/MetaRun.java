@@ -23,9 +23,9 @@ public class MetaRun {
 //            System.out.println(e.isDirected());
         }
 
-        g.display();
+//        g.display();
 
-        run(g, "a", "d", 4);
+        run(g, "a", "h", 4);
     }
 
     private static void run(Graph g, String start, String target, int desiredFlow) {
