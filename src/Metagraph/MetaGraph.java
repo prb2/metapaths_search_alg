@@ -23,6 +23,11 @@ public class MetaGraph {
     Map<String, MetaNode> metaNodes;
 
     private Graph internal;
+
+    public double getFlow() {
+        return flow;
+    }
+
     private double flow;
 
     protected MetaGraph(String id, double desiredFlow) {
@@ -57,6 +62,7 @@ public class MetaGraph {
         //TODO: Uncomment to display meta graph
         internal.display();
     }
+
 
     public MetaNode getMetaNode(String metaNodeID) {
 //        return new MetaNode(metaNodeID, stateMap.get(metaNodeID));

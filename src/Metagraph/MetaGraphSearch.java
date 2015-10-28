@@ -71,22 +71,30 @@ public class MetaGraphSearch {
     private void findMetaNbrs(MetaNode current) {
         Queue<Node> innerNodes = getInnerNodes(current.getId());
         Map<String, Double> currentState = current.getState();
+        Map<String, Double> newState = new HashMap<>();
+        boolean completed = true;
 
         while (!innerNodes.isEmpty()) {
             Node innerNode = innerNodes.poll();
             double flow = currentState.get(innerNode.getId());
-            Map<String, Double> newState = new HashMap<>();
             Queue<Edge> nbrEdges = getInnerNodeNbrEdges(innerNode);
             System.out.println(innerNode.getId() + " has nbr edges: " + nbrEdges);
+            if (completed) {
+                newState = new HashMap<>();
+            }
 
             // recursively finds potential metanode nbrs and adds them to the graph if they are valid
-            Map<String, Double> potentialState = recursiveMetaNodeCompletion(newState, nbrEdges, flow, current);
+            newState = recursiveMetaNodeCompletion(newState, nbrEdges, flow, current, completed);
+            System.out.println("Exited recursion with:" + newState);
+            System.out.println("Need metaflow:" + meta);
+            MetaNode verifyNode = new MetaNode(newState.toString(), newState);
+            completed = verifyNode.isValid(meta.getFlow());
+            System.out.println("Completed: " + completed);
             // make new meta node with newState
-            innerNode = innerNodes.poll();
         }
     }
 
-    private Map<String, Double> recursiveMetaNodeCompletion(Map<String, Double> newState, Queue<Edge> nbrEdges, double remainingFlow, MetaNode parent) {
+    private Map<String, Double> recursiveMetaNodeCompletion(Map<String, Double> newState, Queue<Edge> nbrEdges, double remainingFlow, MetaNode parent, boolean completed) {
         if (remainingFlow == 0.0 && nbrEdges.isEmpty()) {
             // add metanode to metagraph if flow has been satisfied and there are no more nbrs to consider
             MetaNode potential = new MetaNode(newState.toString(), newState);
@@ -94,29 +102,50 @@ public class MetaGraphSearch {
                 meta.addDirectedMetaEdge(parent.getId(), potential.getId());
                 explored.push(potential);
                 System.out.println("Added new meta nbr: " + potential.getState().toString());
+                completed = true;
             } else {
+                System.out.println("Not valid, but ran out of edges, need to pop up: " + newState);
+                return newState;
             }
         }
-//        System.out.println("Exploring new state: " + newState + "with remaining flow: " + remainingFlow);
+        System.out.println("Exploring new state: " + newState + "with remaining flow: " + remainingFlow);
         if (nbrEdges.isEmpty()) {
             return newState;
         }
         Edge nbrEdge = nbrEdges.poll(); // know it's not empty
+        System.out.println("Current edge: " + nbrEdge);
 
         // get the first nbr and its capacity
         Node nbrNode = nbrEdge.getTargetNode();
         double nbrCapacity = nbrEdge.getAttribute("capacity");
+        System.out.println("Nbr cap: " + nbrCapacity);
 
         // While we have flow to move, or we hit the capacity
         // explore availiable states from move i balls to nbr
         for (double i = 0.0; i <= Math.min(remainingFlow, nbrCapacity); i += 1.0) {
-            newState.put(nbrNode.getId(), i); // add this flow move to the state
-            newState = recursiveMetaNodeCompletion(newState, nbrEdges, remainingFlow - i, parent);
+            System.out.println("Min of " + remainingFlow + " and " + nbrCapacity + ". i =" + i);
+            if (completed) {
+                newState.put(nbrNode.getId(), i); // add this flow move to the state
+            } else {
+                if (newState.containsKey(nbrNode.getId())) {
+                    newState.put(nbrNode.getId(), newState.get(nbrNode.getId()) + i); // add this flow move to the state
+                } else {
+                    newState.put(nbrNode.getId(), i); // add this flow move to the state
+                }
+            }
+            System.out.println("Added to state: " + newState);
+            newState = recursiveMetaNodeCompletion(newState, nbrEdges, remainingFlow - i, parent, completed);
         }
         nbrEdges.add(nbrEdge);
+        if (completed){
+            return newState;
+        }
         return new HashMap<>();
     }
-
+//
+//    private Map<String, Double> mergeStates(Map<String, Double> first, Map<String, Double> second) {
+//
+//    }
 
     /**
      * Get the nodes that are contained in the specified metanode
