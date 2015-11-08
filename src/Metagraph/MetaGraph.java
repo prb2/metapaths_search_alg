@@ -44,6 +44,7 @@ public class MetaGraph {
             node.setAttribute("state", metanode.getState().toString());
             metaNodes.put(metanode.getId(), metanode);
             stateMap.put(metanode.getId(), metanode.getState());
+            System.out.println("Added new meta nbr to MG with ID: " + metanode.getId() + " and value: " + metanode.getState());
             return true;
         } else {
             System.out.println("State was not valid. Node was not added to meta-graph.");
@@ -61,9 +62,10 @@ public class MetaGraph {
 
     public void display() {
         for (Node n : internal) {
-            n.setAttribute("ui.label", stateMap.get(n.getId()).toString());
+            n.setAttribute("ui.label", stateMap.get(n.getId()));
         }
         //TODO: Uncomment to display meta graph
+        System.out.println(stateMap);
         internal.display();
     }
 

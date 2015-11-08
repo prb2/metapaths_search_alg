@@ -57,20 +57,13 @@ public class MetaGraphSearch {
             MetaNode current = explored.pop();
             System.out.println("Popped from stack: " + current.getState());
             if (current.isTarget(targetID, flow)) {
-                // Reached the target state, so we'll stop search
-                // In the future, could keep going to generate all possible meta-nbrs
+                // Reached the target state, keep going to generate all possible meta-nbrs
                 System.out.println("Current is target");
-//                break;
+                //break;
             } else {
                 // Find all neighbors of this meta node
                 System.out.println("Finding new meta nbr for: " + current.getState().toString());
                 findMetaNbrs(current);
-
-
-                // Maintain the reachable nbrs to be visited later
-//                for (MetaNode mn : metaNbrs) {
-//                    explored.push(mn);
-//                }
             }
         }
 
@@ -84,15 +77,21 @@ public class MetaGraphSearch {
         boolean completed = true;
 
         while (!innerNodes.isEmpty()) {
+            // Get the next inner node
             Node innerNode = innerNodes.poll();
+            // Get the flow that needs to be moved from this node
             double flow = currentState.get(innerNode.getId());
+            // Get the neighboring edges
             Queue<Edge> nbrEdges = getInnerNodeNbrEdges(innerNode);
-            System.out.println(innerNode.getId() + " has nbr edges: " + nbrEdges);
+//            System.out.println(innerNode.getId() + " has nbr edges: " + nbrEdges);
+            // If a complete state was found in a previous, iteration, start
+            // with a fresh state. Otherwise, build upon the previous state
+            // TODO: This probably isn't the best way to handle this. Think about it.
             if (completed) {
                 newState = new HashMap<>();
             }
 
-            // recursively finds potential metanode nbrs and adds them to the graph if they are valid
+            // Recursively finds potential metanode nbrs and adds them to the graph if they are valid
             newState = recursiveMetaNodeCompletion(newState, nbrEdges, flow, current, completed);
             System.out.println("Exited recursion with:" + newState);
             System.out.println("Need metaflow:" + meta);
@@ -110,47 +109,57 @@ public class MetaGraphSearch {
             if (meta.hasNode(potential.getId())) {
                 meta.addDirectedMetaEdge(parent.getId(), potential.getId());
                 explored.push(potential);
-                System.out.println("Added new meta nbr: " + potential.getState().toString());
+//                System.out.println("Added new meta nbr: " + potential.getState().toString());
                 completed = true;
+                return newState;
             } else {
                 if (meta.addMetaNode(potential)) {
                     meta.addDirectedMetaEdge(parent.getId(), potential.getId());
                     explored.push(potential);
-                    System.out.println("Added new meta nbr: " + potential.getState().toString());
+//                    System.out.println("Added new meta nbr: " + potential.getState().toString());
                     completed = true;
+                    return newState;
                 } else {
                     System.out.println("Not valid, but ran out of edges, need to pop up: " + newState);
                     return newState;
                 }
             }
         }
-        System.out.println("Exploring new state: " + newState + "with remaining flow: " + remainingFlow);
+//        System.out.println("Exploring new state: " + newState + "with remaining flow: " + remainingFlow);
         if (nbrEdges.isEmpty()) {
             return newState;
         }
         Edge nbrEdge = nbrEdges.poll(); // know it's not empty
-        System.out.println("Current edge: " + nbrEdge);
+//        System.out.println("Current edge: " + nbrEdge);
 
         // get the first nbr and its capacity
         Node nbrNode = nbrEdge.getTargetNode();
         double nbrCapacity = nbrEdge.getAttribute("capacity");
-        System.out.println("Nbr cap: " + nbrCapacity);
+//        System.out.println("Nbr cap: " + nbrCapacity);
 
         // While we have flow to move, or we hit the capacity
         // explore availiable states from move i balls to nbr
-        for (double i = 0.0; i <= Math.min(remainingFlow, nbrCapacity); i += 1.0) {
+        for (double i = 1.0; i <= Math.min(remainingFlow, nbrCapacity); i += 1.0) {
             System.out.println("Min of " + remainingFlow + " and " + nbrCapacity + ". i =" + i);
+            if (remainingFlow == 0) {
+                completed = true;
+            }
             if (completed) {
                 newState.put(nbrNode.getId(), i); // add this flow move to the state
             } else {
                 if (newState.containsKey(nbrNode.getId())) {
-                    newState.put(nbrNode.getId(), newState.get(nbrNode.getId()) + i); // add this flow move to the state
+                    newState.put(nbrNode.getId(), newState.get(nbrNode.getId()) + 1); // add this flow move to the state
                 } else {
                     newState.put(nbrNode.getId(), i); // add this flow move to the state
                 }
             }
-            System.out.println("Added to state: " + newState);
+//            System.out.println("Added to state: " + newState);
             newState = recursiveMetaNodeCompletion(newState, nbrEdges, remainingFlow - i, parent, completed);
+            MetaNode temp = new MetaNode("temp", newState);
+            if (temp.isValid(meta.getFlow())) {
+                // If a complete state was found in below recursin, continue with a fresh state
+                newState = new HashMap<>();
+            }
         }
         nbrEdges.add(nbrEdge);
         if (completed){
@@ -173,7 +182,7 @@ public class MetaGraphSearch {
 
         for (String n : meta.getMetaNode(metaNodeID).getState().keySet()) {
 
-            System.out.println("inner: " + base.getNode(n));
+//            System.out.println("inner: " + base.getNode(n));
             innerNodes.add(base.getNode(n));
         }
 
