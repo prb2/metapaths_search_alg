@@ -30,7 +30,7 @@ public class MetaNode {
             stateFlow += entry.getValue();
         }
 
-        System.out.println("State flow: " + stateFlow + " Required flow: " + requiredFlow);
+//        System.out.println("State flow: " + stateFlow + " Required flow: " + requiredFlow);
         return stateFlow == requiredFlow;
     }
 

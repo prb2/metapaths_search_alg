@@ -13,19 +13,27 @@ import java.io.IOException;
  */
 public class MetaRun {
     public static void main(String args[]) throws IOException {
-        Graph g = new SingleGraph("Input Graph");
+        Graph g = new SingleGraph("Custom");
         FileSourceDOT fs = new FileSourceDOT();
         fs.addSink(g);
-        fs.readAll("graphs/simpler.dot");
+        fs.readAll("graphs/custom.dot");
+
+        Graph g1 = new SingleGraph("Simple");
+        FileSourceDOT fs1 = new FileSourceDOT();
+        fs1.addSink(g1);
+        fs1.readAll("graphs/simple.dot");
 
         for (Edge e : g.getEdgeSet()) {
             e.setAttribute("ui.label", e.getAttribute("capacity").toString());
-//            System.out.println(e.isDirected());
+        }
+        for (Edge e : g1.getEdgeSet()) {
+            e.setAttribute("ui.label", e.getAttribute("capacity").toString());
         }
 
 //        g.display();
 
-        run(g, "a", "d", 4);
+        run(g, "S", "T", 5);
+//        run(g1, "a", "h", 4);
     }
 
     private static void run(Graph g, String start, String target, int desiredFlow) {

@@ -5,8 +5,12 @@ import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.AbstractGraph;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.graph.implementations.SingleNode;
+import org.graphstream.stream.file.FileSink;
+import org.graphstream.stream.file.FileSinkDOT;
 import scala.util.regexp.Base;
 
+import java.io.IOError;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,7 +61,9 @@ public class MetaGraph {
     }
 
     public void addDirectedMetaEdge(String from, String to) {
-        internal.addEdge(from + "->" + to, from, to, true);
+        if (internal.getEdge(from + "->" + to) == null) {
+            internal.addEdge(from + "->" + to, from, to, true);
+        }
     }
 
     public void display() {
@@ -67,6 +73,11 @@ public class MetaGraph {
         //TODO: Uncomment to display meta graph
         System.out.println(stateMap);
         internal.display();
+    }
+
+    public void writeToFile(String filename) throws IOException {
+        FileSink fs = new FileSinkDOT();
+        fs.writeAll(internal, "graphs/" + filename + ".dot");
     }
 
 
