@@ -51,6 +51,10 @@ public class MetaGraph {
         }
     }
 
+    public Boolean hasNode(String nodeID) {
+        return metaNodes.containsKey(nodeID);
+    }
+
     public void addDirectedMetaEdge(String from, String to) {
         internal.addEdge(from + "->" + to, from, to, true);
     }

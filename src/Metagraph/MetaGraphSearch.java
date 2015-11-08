@@ -25,6 +25,10 @@ public class MetaGraphSearch {
     private double flow;
     private String targetID;
 
+    /**
+     * Initializes the meta-graph, adds the starting meta-nbr, and starts the
+     * search for neighborhing meta-nbrs
+     */
     public void constructMetaGraph(Graph inputG, String s, String t, double desiredFlow) {
         meta = new MetaGraph("MetaGraph", desiredFlow);
         base = inputG;
@@ -45,13 +49,18 @@ public class MetaGraphSearch {
         meta.display();
     }
 
+    /**
+     * Searches for nbrs of the already explored meta-nbrs
+     */
     private void populateMetaGraph() {
         while (!explored.empty()) {
             MetaNode current = explored.pop();
             System.out.println("Popped from stack: " + current.getState());
             if (current.isTarget(targetID, flow)) {
+                // Reached the target state, so we'll stop search
+                // In the future, could keep going to generate all possible meta-nbrs
                 System.out.println("Current is target");
-                break;
+//                break;
             } else {
                 // Find all neighbors of this meta node
                 System.out.println("Finding new meta nbr for: " + current.getState().toString());
@@ -98,14 +107,21 @@ public class MetaGraphSearch {
         if (remainingFlow == 0.0 && nbrEdges.isEmpty()) {
             // add metanode to metagraph if flow has been satisfied and there are no more nbrs to consider
             MetaNode potential = new MetaNode(newState.toString(), newState);
-            if (meta.addMetaNode(potential)) {
+            if (meta.hasNode(potential.getId())) {
                 meta.addDirectedMetaEdge(parent.getId(), potential.getId());
                 explored.push(potential);
                 System.out.println("Added new meta nbr: " + potential.getState().toString());
                 completed = true;
             } else {
-                System.out.println("Not valid, but ran out of edges, need to pop up: " + newState);
-                return newState;
+                if (meta.addMetaNode(potential)) {
+                    meta.addDirectedMetaEdge(parent.getId(), potential.getId());
+                    explored.push(potential);
+                    System.out.println("Added new meta nbr: " + potential.getState().toString());
+                    completed = true;
+                } else {
+                    System.out.println("Not valid, but ran out of edges, need to pop up: " + newState);
+                    return newState;
+                }
             }
         }
         System.out.println("Exploring new state: " + newState + "with remaining flow: " + remainingFlow);
