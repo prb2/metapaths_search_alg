@@ -110,7 +110,7 @@ public class MetaGraphSearch {
     }
 
     private Boolean recursiveMetaNodeCompletion(Map<String, Double> newState, Queue<Edge> nbrEdges, double remainingFlow, MetaNode parent) {
-        System.out.println("Called with: " + newState + " remaining flow: " + remainingFlow);
+//        System.out.println("Called with: " + newState + " remaining flow: " + remainingFlow);
         if (nbrEdges.isEmpty()) {
             return false;
         } else {
@@ -127,7 +127,7 @@ public class MetaGraphSearch {
                 } else {
                     newState.put(nbrNode.getId(), i); // add this flow move to the state
                 }
-                System.out.println("State after flow move: " + newState);
+//                System.out.println("State after flow move: " + newState);
 
                 // See if the flow move resulted in a valid state
                 MetaNode potential = new MetaNode(newState.toString(), newState);
