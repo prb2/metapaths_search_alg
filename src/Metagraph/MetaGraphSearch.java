@@ -41,11 +41,12 @@ public class MetaGraphSearch {
         HashMap<String, Double> state = new HashMap<>();
         // All the flow is in the starting node
         state.put(s, desiredFlow);
+        String startNodeName = state.toString();
         // Add the start node to the MG
-        meta.addMetaNode(new MetaNode(s, state));
+        meta.addMetaNode(new MetaNode(startNodeName, state));
 
         // Find reachable states
-        explored.push(meta.getMetaNode(s));
+        explored.push(meta.getMetaNode(startNodeName));
         populateMetaGraph();
         meta.display();
         try {
@@ -105,7 +106,11 @@ public class MetaGraphSearch {
     }
 
     private Boolean recursiveMetaNodeCompletion(Map<String, Double> newState, Queue<Edge> nbrEdges, double remainingFlow, MetaNode parent) {
-//        System.out.println("Called with: " + newState + " remaining flow: " + remainingFlow);
+        System.out.println("Called with: " + newState + " remaining flow: " + remainingFlow);
+        if (!isNew(newState)) {
+            System.out.println("Have seen this state before.");
+            return false;
+        }
         if (nbrEdges.isEmpty()) {
             return false;
         } else {
@@ -126,10 +131,16 @@ public class MetaGraphSearch {
 
                 // See if the flow move resulted in a valid state
                 MetaNode potential = new MetaNode(newState.toString(), newState);
+                System.out.println("Potential: " + potential.getState());
                 if (potential.isValid(meta.getFlow())) {
                     if (meta.hasNode(potential.getId())) {
                         meta.addDirectedMetaEdge(parent.getId(), potential.getId());
                         explored.push(potential);
+                        System.out.println("Added: " + potential.getState());
+                        if (potential.getState().containsKey(nbrEdge.getSourceNode())) {
+                            System.out.println("state contains edge source");
+                            break;
+                        }
                     } else {
                         if (meta.addMetaNode(potential)) {
                             meta.addDirectedMetaEdge(parent.getId(), potential.getId());
@@ -145,6 +156,13 @@ public class MetaGraphSearch {
             nbrEdges.add(nbrEdge);
             return false;
         }
+    }
+
+    private boolean isNew(Map<String, Double> newState) {
+        if(meta.hasState(newState) && newState != meta.getMetaNode("S").getState()) {
+            return false;
+        }
+        return true;
     }
 
     /**

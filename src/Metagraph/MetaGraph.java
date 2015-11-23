@@ -86,4 +86,7 @@ public class MetaGraph {
         return metaNodes.get(metaNodeID);
     }
 
+    public boolean hasState(Map<String, Double> newState) {
+        return stateMap.containsValue(newState);
+    }
 }

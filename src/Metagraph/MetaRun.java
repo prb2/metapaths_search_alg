@@ -15,11 +15,10 @@ import java.io.IOException;
  */
 public class MetaRun {
     public static void main(String args[]) throws IOException {
-        Graph g = new SingleGraph("Custom_SelfEdge");
+        Graph g = new SingleGraph("Staggered");
         FileSourceDOT fs = new FileSourceDOT();
         fs.addSink(g);
-        fs.readAll("graphs/custom_selfEdge.dot");
-        writeGraph(g, "custom_selfEdge.dot");
+        fs.readAll("graphs/staggered.dot");
 
         for (Edge e : g.getEdgeSet()) {
             e.setAttribute("ui.label", e.getAttribute("capacity").toString());
@@ -27,7 +26,7 @@ public class MetaRun {
 
 //        g.display();
 
-        run(g, "S", "T", 5);
+        run(g, "a", "b", 5);
     }
 
     private static void run(Graph g, String start, String target, int desiredFlow) {

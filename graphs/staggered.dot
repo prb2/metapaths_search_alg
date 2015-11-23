@@ -1,0 +1,5 @@
+graph {
+	"a" ["ui.label"="a"];
+	"b" ["ui.label"="b"];
+	"a" -> "b" ["dir"="forward","capacity"=3.0];
+}
