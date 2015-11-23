@@ -23,5 +23,4 @@ graph {
 	"g" -> "T" ["label"="3.0","capacity"=3.0];
 
 	"T" -> "T" ["label"="10000.0","capacity"=10000.0];
-	"e" -> "e" ["label"="10000.0","capacity"=10000.0];
 }

@@ -1,5 +1,10 @@
 graph {
 	"a" ["ui.label"="a"];
 	"b" ["ui.label"="b"];
+	"c" ["ui.label"="c"];
+	"d" ["ui.label"="d"];
 	"a" -> "b" ["dir"="forward","capacity"=3.0];
+	"a" -> "c" ["dir"="forward","capacity"=2.0];
+	"b" -> "d" ["dir"="forward","capacity"=2.0];
+	"c" -> "d" ["dir"="forward","capacity"=2.0];
 }
