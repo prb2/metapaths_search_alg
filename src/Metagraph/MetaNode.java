@@ -35,7 +35,6 @@ public class MetaNode {
     }
 
     public Boolean isTarget(String targetID, double targetFlow) {
-        System.out.println("Called isTarget with: " + targetID + " and " + targetFlow);
         if (state.containsKey(targetID)) {
             if (state.get(targetID) == targetFlow) {
                 return true;

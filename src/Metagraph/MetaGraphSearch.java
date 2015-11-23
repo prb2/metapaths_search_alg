@@ -63,9 +63,8 @@ public class MetaGraphSearch {
             MetaNode current = explored.pop();
             System.out.println("Popped from stack: " + current.getState());
             if (current.isTarget(targetID, flow)) {
-                // Reached the target state, keep going to generate all possible meta-nbrs
+                // Reached the target state, but keep going to generate all possible meta-nbrs
                 System.out.println("Current is target");
-                //break;
             } else {
                 // Find all neighbors of this meta node
                 System.out.println("Finding new meta nbr for: " + current.getState().toString());
@@ -85,11 +84,14 @@ public class MetaGraphSearch {
         while (!innerNodes.isEmpty()) {
             // Get the next inner node
             Node innerNode = innerNodes.poll();
+
             // Get the flow that needs to be moved from this node
             double flow = currentState.get(innerNode.getId());
+
             // Get the neighboring edges
             Queue<Edge> nbrEdges = getInnerNodeNbrEdges(innerNode);
 //            System.out.println(innerNode.getId() + " has nbr edges: " + nbrEdges);
+
             // If a complete state was found in a previous, iteration, start
             // with a fresh state. Otherwise, build upon the previous state
             // TODO: This probably isn't the best way to handle this. Think about it.
@@ -99,13 +101,6 @@ public class MetaGraphSearch {
 
             // Recursively finds potential metanode nbrs and adds them to the graph if they are valid
             completed = recursiveMetaNodeCompletion(newState, nbrEdges, flow, current);
-//            newState = recursiveMetaNodeCompletion(newState, nbrEdges, flow, current, completed);
-//            System.out.println("Exited recursion with:" + newState);
-//            System.out.println("Need metaflow:" + meta);
-//            MetaNode verifyNode = new MetaNode(newState.toString(), newState);
-//            completed = verifyNode.isValid(meta.getFlow());
-//            System.out.println("Completed: " + completed);
-            // make new meta node with newState
         }
     }
 
@@ -150,30 +145,6 @@ public class MetaGraphSearch {
             nbrEdges.add(nbrEdge);
             return false;
         }
-//        if (remainingFlow == 0.0 && nbrEdges.isEmpty()) {
-//            // add metanode to metagraph if flow has been satisfied and there are no more nbrs to consider
-//            MetaNode potential = new MetaNode(newState.toString(), newState);
-//            if (meta.hasNode(potential.getId())) {
-//                meta.addDirectedMetaEdge(parent.getId(), potential.getId());
-//                explored.push(potential);
-////                System.out.println("Added new meta nbr: " + potential.getState().toString());
-//                completed = true;
-//                return newState;
-//            } else {
-//                if (meta.addMetaNode(potential)) {
-//                    meta.addDirectedMetaEdge(parent.getId(), potential.getId());
-//                    explored.push(potential);
-////                    System.out.println("Added new meta nbr: " + potential.getState().toString());
-//                    completed = true;
-//                    return newState;
-//                } else {
-//                    System.out.println("Not valid, but ran out of edges, need to pop up: " + newState);
-//                    return newState;
-//                }
-//            }
-//            return newState;
-//        }
-//        System.out.println("Exploring new state: " + newState + "with remaining flow: " + remainingFlow);
     }
 
     /**

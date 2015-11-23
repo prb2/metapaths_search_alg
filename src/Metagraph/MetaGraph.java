@@ -72,7 +72,7 @@ public class MetaGraph {
         }
         //TODO: Uncomment to display meta graph
         System.out.println(stateMap);
-        internal.display();
+//        internal.display();
     }
 
     public void writeToFile(String filename) throws IOException {

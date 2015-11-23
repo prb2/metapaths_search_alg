@@ -18,7 +18,8 @@ public class MetaRun {
         Graph g = new SingleGraph("Custom_SelfEdge");
         FileSourceDOT fs = new FileSourceDOT();
         fs.addSink(g);
-        fs.readAll("graphs/custom.dot");
+        fs.readAll("graphs/custom_selfEdge.dot");
+        writeGraph(g, "custom_selfEdge.dot");
 
         for (Edge e : g.getEdgeSet()) {
             e.setAttribute("ui.label", e.getAttribute("capacity").toString());
