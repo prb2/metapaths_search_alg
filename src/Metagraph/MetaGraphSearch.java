@@ -194,7 +194,12 @@ public class MetaGraphSearch {
                 temp.putAll(newState);
                 recursiveMetaNodeCompletion(temp, nbrEdges, remainingFlow - i, parent);
             }
-            nbrEdges.add(nbrEdge); // TODO: WHAT DOES THIS DO? Doing so results in a much more dense MG
+            // TODO: WHAT DOES THIS DO?
+            // Without it, states in which no flow remains at the start node after the
+            // first step are not found, i.e. only partial states are explored (which we don't want)
+            // So, it needs to be here.
+            nbrEdges.add(nbrEdge);
+
             return false;
         }
     }
@@ -224,6 +229,7 @@ public class MetaGraphSearch {
     }
 
     public void findMetaPath() {
+        // TODO: Finds a metapath on a constructed metagraph
         if (meta == null) {
             System.out.println("Must construct the meta graph first.");
             return;
