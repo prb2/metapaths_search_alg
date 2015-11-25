@@ -173,65 +173,6 @@ public class MetaGraphSearch {
         }
     }
 
-
-    private Boolean recursiveMetaNodeCompletion(Map<String, Double> newState, MetaNode parent) {
-        System.out.println("Called with: " + newState);
-        for (String inner : newState.keySet()) {
-            System.out.println("Inner: " + inner);
-            Queue<Edge> nbrEdges = getInnerNodeNbrEdges(base.getNode(inner));
-            System.out.println("Nbr edges: " + nbrEdges);
-            double remainingFlow = newState.get(inner);
-
-            while(!nbrEdges.isEmpty()){
-                // Get the next nbr and its capacity
-                Edge nbrEdge = nbrEdges.poll(); // know it's not empty
-                Node nbrNode = nbrEdge.getTargetNode();
-                double nbrCapacity = nbrEdge.getAttribute("capacity");
-
-                // While we have flow to move, or we hit the capacity
-                // explore available states from moving i balls to nbr
-                for (double i = 1.0; i <= Math.min(remainingFlow, nbrCapacity); i += 1.0) {
-                    Map<String, Double> nextState = new HashMap<>();
-                    nextState.putAll(newState);
-
-                    double flowAtInner = newState.get(inner) - i;
-                    nextState.put(inner, flowAtInner);
-                    if (nextState.containsKey(nbrNode.getId())) {
-                        nextState.put(nbrNode.getId(), nextState.get(nbrNode.getId()) + 1); // add this flow move to the state
-                    } else {
-                        nextState.put(nbrNode.getId(), i); // add this flow move to the state
-                    }
-
-//                System.out.println("State after flow move: " + nextState);
-
-                    // See if the flow move resulted in a valid state
-                    MetaNode potential = new MetaNode(nextState.toString(), nextState);
-//                    System.out.println("Potential: " + potential.getState());
-                    if (potential.isValid(meta.getFlow())) {
-                        if (meta.hasNode(potential.getId())) {
-                            meta.addDirectedMetaEdge(parent.getId(), potential.getId());
-//                            System.out.println("Added: " + potential.getState());
-                        } else {
-                            if (meta.addMetaNode(potential)) {
-                                meta.addDirectedMetaEdge(parent.getId(), potential.getId());
-                                explored.push(potential);
-                            }
-                        }
-
-//                        if (!meta.hasState(nextState)) {
-//                            explored.push(potential);
-//                        }
-                    }
-                    // Recurse down to find states involving other neighbors
-//                    recursiveMetaNodeCompletion(nextState, parent);
-                }
-
-            }
-        }
-
-        return false;
-    }
-
     private boolean isNew(Map<String, Double> newState) {
         if(meta.hasState(newState) && newState != meta.getMetaNode("S").getState()) {
             return false;
