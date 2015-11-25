@@ -139,7 +139,7 @@ public class MetaGraphSearch {
                     newState.put(nbrNode.getId(), newState.get(nbrNode.getId()) + 1);
                 } else {
                     // If there is no flow already at this node, place "i" flow there
-                    newState.put(nbrNode.getId(), i);
+                    newState.put(nbrNode.getId(), 1.0);
                 }
 
 //                System.out.println("State after flow move: " + newState);
@@ -194,7 +194,7 @@ public class MetaGraphSearch {
                 temp.putAll(newState);
                 recursiveMetaNodeCompletion(temp, nbrEdges, remainingFlow - i, parent);
             }
-            nbrEdges.add(nbrEdge);
+            nbrEdges.add(nbrEdge); // TODO: WHAT DOES THIS DO? Doing so results in a much more dense MG
             return false;
         }
     }
