@@ -26,6 +26,10 @@ public class MetaGraph {
     Map<String, Map<String, Double>> stateMap;
     Map<String, MetaNode> metaNodes;
 
+    public Graph getInternal() {
+        return internal;
+    }
+
     private Graph internal;
 
     public double getFlow() {
@@ -72,7 +76,7 @@ public class MetaGraph {
         }
         //TODO: Uncomment to display meta graph
         System.out.println(stateMap);
-//        internal.display();
+        internal.display();
     }
 
     public void writeToFile(String filename) throws IOException {

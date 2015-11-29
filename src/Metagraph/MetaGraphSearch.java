@@ -53,14 +53,14 @@ public class MetaGraphSearch {
         populateMetaGraph();
 
         // Print out the solution state map and display the metagraph
-        meta.display();
+//        meta.display();
 
         // Save the metagraph to file
-        try {
-            meta.writeToFile("MG_" + inputG.getId());
-        } catch (IOException e){
-            System.out.println(e);
-        }
+//        try {
+//            meta.writeToFile("MG_" + inputG.getId());
+//        } catch (IOException e){
+//            System.out.println(e);
+//        }
     }
 
     /**
