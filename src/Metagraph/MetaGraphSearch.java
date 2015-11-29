@@ -78,44 +78,43 @@ public class MetaGraphSearch {
             } else {
                 System.out.println("Finding new meta nbr for: " + current.getState().toString());
                 // Find all neighbors of this meta node, then continue explores metanodes from the stack
-                findMetaNbrs(current);
+                iterativeFindMetaNbrs(current);
             }
         }
 
     }
-
 
     /**
      * Finds all neighbors that are reachable with a valid flow move.
      */
-    private void findMetaNbrs(MetaNode current) {
-        Queue<Node> innerNodes = getInnerNodes(current.getId());
-        Map<String, Double> currentState = current.getState();
-        Map<String, Double> newState = new HashMap<>();
-        boolean completed = true;
-
-        while (!innerNodes.isEmpty()) {
-            // Get the next inner node
-            Node innerNode = innerNodes.poll();
-
-            // Get the flow that needs to be moved from this node
-            double flow = currentState.get(innerNode.getId());
-
-            // Get the neighboring edges
-            Queue<Edge> nbrEdges = getInnerNodeNbrEdges(innerNode);
-//            System.out.println(innerNode.getId() + " has nbr edges: " + nbrEdges);
-
-            // If a complete state was found in a previous, iteration, start
-            // with a fresh state. Otherwise, build upon the previous state
-            // TODO: This probably isn't the best way to handle this
-            if (completed) {
-                newState = new HashMap<>();
-            }
-
-            // Recursively finds potential metanode nbrs and adds them to the graph if they are valid
-            completed = recursiveMetaNodeCompletion(newState, nbrEdges, flow, current);
-        }
-    }
+//    private void findMetaNbrs(MetaNode current) {
+//        Queue<Node> innerNodes = getInnerNodes(current.getId());
+//        Map<String, Double> currentState = current.getState();
+//        Map<String, Double> newState = new HashMap<>();
+//        boolean completed = true;
+//
+//        while (!innerNodes.isEmpty()) {
+//            // Get the next inner node
+//            Node innerNode = innerNodes.poll();
+//
+//            // Get the flow that needs to be moved from this node
+//            double flow = currentState.get(innerNode.getId());
+//
+//            // Get the neighboring edges
+//            Queue<Edge> nbrEdges = getInnerNodeNbrEdges(innerNode);
+////            System.out.println(innerNode.getId() + " has nbr edges: " + nbrEdges);
+//
+//            // If a complete state was found in a previous, iteration, start
+//            // with a fresh state. Otherwise, build upon the previous state
+//            // TODO: This probably isn't the best way to handle this
+//            if (completed) {
+//                newState = new HashMap<>();
+//            }
+//
+//            // Recursively finds potential metanode nbrs and adds them to the graph if they are valid
+//            completed = recursiveMetaNodeCompletion(newState, nbrEdges, flow, current);
+//        }
+//    }
 
     /**
      * Given a state, will create new states by moving remaining flow across the available nbrEdge
@@ -206,11 +205,9 @@ public class MetaGraphSearch {
 
     /**
      * Get the nodes that are contained in the specified metanode
-     * @param metaNodeID
-     * @return
      */
-    public Queue<Node> getInnerNodes(String metaNodeID) {
-        Queue<Node> innerNodes = new LinkedBlockingQueue<>();
+    public ArrayList<Node> getInnerNodes(String metaNodeID) {
+        ArrayList<Node> innerNodes = new ArrayList<>();
 
         for (String n : meta.getMetaNode(metaNodeID).getState().keySet()) {
             innerNodes.add(base.getNode(n));
@@ -241,4 +238,84 @@ public class MetaGraphSearch {
     public MetaGraph getMeta() {
         return meta;
     }
+
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Finds the meta nbrs of current and adds them to the stack.
+     */
+    private void iterativeFindMetaNbrs(MetaNode current) {
+        // Maps each inner node of current to a list of all possible moves for the flow at that node
+        HashMap<String, ArrayList<HashMap<String, Double>>> partialStates = new HashMap<>();
+
+        ArrayList<Node> innerNodes = getInnerNodes(current.getId());
+        for (Node node : innerNodes) {
+            double requiredFlow = current.getState().get(node.getId());
+            ArrayList<Node> nbrs = getInnerNodeNbrs(node);
+            int j = nbrs.size() - 1; // start with the first nbr of node
+
+            // 2. Merge each possible combination of partial states to create complete states
+            if (j >= 0) {
+                // get all the partial states resulting from moving the flow at this 'node'
+                partialStates.put(node.getId(), recursiveNbrSearch(requiredFlow, node, nbrs, j));
+            } else {
+                continue;
+            }
+        }
+        System.out.println(partialStates);
+
+
+        // 3. Push all found completed states onto the stack, then return
+    }
+
+    /**
+     *
+     * @param n The amount of flow that needs to be distributed
+     * @param j The jth nbr to move flow to
+     * @return A partial state
+     */
+    private ArrayList<HashMap<String, Double>> recursiveNbrSearch(double n, Node parent, ArrayList<Node> nbrs, int j) {
+        ArrayList<HashMap<String, Double>> states = new ArrayList<>();
+        // 1. for each inner node in current's state, generate the possible partial states
+        Node nbr = nbrs.get(j);
+        for (double i = 0; i <= Math.min(n, capacity(parent, nbr)); i++) {
+            HashMap<String, Double>  partialState = new HashMap<>();
+            // move i flow to this nbr
+            partialState.put(nbr.getId(), i);
+            // allocate the remaining flow for the remaining nbrs
+            for (HashMap<String, Double> state : recursiveNbrSearch(n - i, parent, nbrs, j + 1)) {
+                // merge the flow move to this nbr with flow that went to the other nbrs
+                states.add(mergePartialStates(partialState, state));
+            }
+        }
+
+        return states;
+    }
+
+    private HashMap<String, Double> mergePartialStates(HashMap<String, Double> partialState1, HashMap<String, Double> partialState2) {
+        for (String key : partialState2.keySet()) {
+            if (partialState1.containsKey(key)) {
+                partialState1.put(key, partialState1.get(key) + partialState2.get(key));
+            } else {
+                partialState1.put(key, partialState2.get(key));
+            }
+        }
+        return partialState1;
+    }
+
+    private double capacity(Node parent, Node node) {
+        Edge nbrEdge = parent.getEdgeToward(node);
+        return nbrEdge.getAttribute("capacity");
+    }
+
+    private ArrayList<Node> getInnerNodeNbrs(Node n) {
+        ArrayList<Node> nbrs = new ArrayList<>();
+        for (Edge e : n.getEachLeavingEdge()) {
+            nbrs.add(e.getTargetNode());
+        }
+        return nbrs;
+    }
+
+
 }
