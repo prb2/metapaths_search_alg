@@ -70,6 +70,11 @@ public class MetaGraph {
         }
     }
 
+    // whether this state is already a node in the meta graph
+    public Boolean contains(HashMap<String, Double> state) {
+        return stateMap.containsValue(state);
+    }
+
     public void display() {
         for (Node n : internal) {
             n.setAttribute("ui.label", stateMap.get(n.getId()));

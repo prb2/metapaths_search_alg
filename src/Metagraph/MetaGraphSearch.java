@@ -1,5 +1,6 @@
 package Metagraph;
 
+import com.google.common.collect.Sets;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
@@ -119,7 +120,7 @@ public class MetaGraphSearch {
     /**
      * Given a state, will create new states by moving remaining flow across the available nbrEdge
      */
-    private Boolean recursiveMetaNodeCompletion(Map<String, Double> newState, Queue<Edge> nbrEdges, double remainingFlow, MetaNode parent) {
+    private Boolean recursiveMetaNodeCompletion(HashMap<String, Double> newState, Queue<Edge> nbrEdges, double remainingFlow, MetaNode parent) {
         System.out.println("Called with: " + newState + " remaining flow: " + remainingFlow);
         if (nbrEdges.isEmpty()) {
             // If no more edges exist, all possible neighboring states have been explored, so stop search for neighbors
@@ -165,7 +166,7 @@ public class MetaGraphSearch {
                     // If a valid state cannot be formed by moving all the flow
                     // Try moving only some of the flow and keeping some at the node
                     System.out.println("have: " + newState + " with: " + remainingFlow);
-                    Map<String, Double> partial = new HashMap<>();
+                    HashMap<String, Double> partial = new HashMap<>();
                     partial.putAll(newState);
                     partial.put(nbrEdge.getSourceNode().toString(), remainingFlow - 1);
                     System.out.println("partial move into: " + partial);
@@ -253,6 +254,7 @@ public class MetaGraphSearch {
         for (Node node : innerNodes) {
             double requiredFlow = current.getState().get(node.getId());
             ArrayList<Node> nbrs = getInnerNodeNbrs(node);
+            System.out.println("Nbrs: " + nbrs);
             int j = nbrs.size() - 1; // start with the first nbr of node
 
             // 2. Merge each possible combination of partial states to create complete states
@@ -263,10 +265,43 @@ public class MetaGraphSearch {
                 continue;
             }
         }
-        System.out.println(partialStates);
+        System.out.println("Partial states: " + partialStates);
+        ArrayList<HashMap<String, Double>> completeStates = generateCompleteStates(partialStates);
+        System.out.println("Complete states: " + completeStates);
 
 
-        // 3. Push all found completed states onto the stack, then return
+        // 3. Push all found completed states (metanodes) onto the stack, then return
+        for (HashMap<String, Double> state : completeStates) {
+            MetaNode metaNode = new MetaNode(state.toString(), state);
+            if (metaNode.isValid(meta.getFlow()) && !meta.contains(metaNode.getState())) {
+                // if this is a valid metanode and we haven't seen it already
+                explored.push(metaNode);
+
+                meta.addMetaNode(metaNode);
+                meta.addDirectedMetaEdge(current.getId(), metaNode.getId());
+            }
+        }
+
+    }
+
+    private ArrayList<HashMap<String, Double>> generateCompleteStates(HashMap<String, ArrayList<HashMap<String, Double>>> partialStates) {
+        return recursiveStateAccumulator((ArrayList<ArrayList<HashMap<String, Double>>>) partialStates.values());
+    }
+
+    private ArrayList<HashMap<String, Double>> recursiveStateAccumulator(ArrayList<ArrayList<HashMap<String, Double>>> valueLists) {
+        ArrayList<HashMap<String, Double>> merged = new ArrayList<>();
+        if (valueLists.size() == 1) {
+            return valueLists.get(0);
+        } else {
+            ArrayList<HashMap<String, Double>> current = valueLists.remove(0);
+            ArrayList<HashMap<String, Double>> rest = recursiveStateAccumulator(valueLists);
+            for (HashMap<String, Double> currentPartial : current) {
+                for (HashMap<String, Double> restPartial : rest) {
+                    merged.add(mergePartialStates(currentPartial, restPartial));
+                }
+            }
+            return merged;
+        }
     }
 
     /**
@@ -276,17 +311,40 @@ public class MetaGraphSearch {
      * @return A partial state
      */
     private ArrayList<HashMap<String, Double>> recursiveNbrSearch(double n, Node parent, ArrayList<Node> nbrs, int j) {
+        System.out.println("Rec. nbr. search with: n=" + n + " parent=" + parent + " nbrs=" + nbrs + " j=" + j);
+
         ArrayList<HashMap<String, Double>> states = new ArrayList<>();
-        // 1. for each inner node in current's state, generate the possible partial states
-        Node nbr = nbrs.get(j);
-        for (double i = 0; i <= Math.min(n, capacity(parent, nbr)); i++) {
-            HashMap<String, Double>  partialState = new HashMap<>();
-            // move i flow to this nbr
-            partialState.put(nbr.getId(), i);
-            // allocate the remaining flow for the remaining nbrs
-            for (HashMap<String, Double> state : recursiveNbrSearch(n - i, parent, nbrs, j + 1)) {
-                // merge the flow move to this nbr with flow that went to the other nbrs
-                states.add(mergePartialStates(partialState, state));
+        if (j < 0) {
+            HashMap<String, Double> state = new HashMap<>();
+            state.put(parent.getId(), n);
+            states.add(state);
+        } else {
+            // 1. for each inner node in current's state, generate the possible partial states
+            Node nbr = nbrs.get(j);
+            for (double i = 0; i <= Math.min(n, capacity(parent, nbr)); i++) {
+                HashMap<String, Double>  partialState = new HashMap<>();
+                // move i flow to this nbr
+                System.out.println("Moving i=" + i + " flow to nbr: " + nbr);
+
+                if (i != 0.0) {
+                    // if 0 flow, don't include in the state
+                    partialState.put(nbr.getId(), i);
+                }
+
+                // allocate the remaining flow for the remaining nbrs
+                ArrayList<HashMap<String, Double>> foundStates = recursiveNbrSearch(n - i, parent, nbrs, j - 1);
+                System.out.println("Found rec. partial states: " + foundStates);
+
+                if (foundStates.size() == 0) {
+                    states.add(partialState);
+                } else {
+                    for (HashMap<String, Double> state : foundStates) {
+                        // merge the flow move to this nbr with flow that went to the other nbrs
+                        HashMap<String, Double> mergedState = mergePartialStates(partialState, state);
+                        states.add(mergedState);
+                        System.out.println("Found partial state: " + mergedState);
+                    }
+                }
             }
         }
 
@@ -294,19 +352,25 @@ public class MetaGraphSearch {
     }
 
     private HashMap<String, Double> mergePartialStates(HashMap<String, Double> partialState1, HashMap<String, Double> partialState2) {
+        HashMap<String, Double> merged = new HashMap<>();
+        merged.putAll(partialState1);
         for (String key : partialState2.keySet()) {
-            if (partialState1.containsKey(key)) {
-                partialState1.put(key, partialState1.get(key) + partialState2.get(key));
+            if (merged.containsKey(key)) {
+                merged.put(key, merged.get(key) + partialState2.get(key));
             } else {
-                partialState1.put(key, partialState2.get(key));
+                merged.put(key, partialState2.get(key));
             }
         }
-        return partialState1;
+        return merged;
     }
 
     private double capacity(Node parent, Node node) {
-        Edge nbrEdge = parent.getEdgeToward(node);
-        return nbrEdge.getAttribute("capacity");
+        if (parent.getId() == node.getId()) {
+            return Double.MAX_VALUE;
+        } else {
+            Edge nbrEdge = parent.getEdgeToward(node);
+            return nbrEdge.getAttribute("capacity");
+        }
     }
 
     private ArrayList<Node> getInnerNodeNbrs(Node n) {

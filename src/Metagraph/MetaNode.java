@@ -3,6 +3,7 @@ package Metagraph;
 import org.graphstream.graph.Node;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -10,9 +11,9 @@ import java.util.Map;
  */
 public class MetaNode {
     private String id;
-    private Map<String, Double> state;
+    private HashMap<String, Double> state;
 
-    public MetaNode(String name, Map<String, Double> counts) {
+    public MetaNode(String name, HashMap<String, Double> counts) {
         id = name;
         state = counts;
     }
@@ -44,11 +45,11 @@ public class MetaNode {
         return false;
     }
 
-    public Map<String, Double> getState() {
+    public HashMap<String, Double> getState() {
         return state;
     }
 
-    public void setState(Map<String, Double> state) {
+    public void setState(HashMap<String, Double> state) {
         this.state = state;
     }
 
