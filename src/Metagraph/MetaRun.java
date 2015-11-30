@@ -15,10 +15,10 @@ import java.io.IOException;
  */
 public class MetaRun {
     public static void main(String args[]) throws IOException {
-        Graph g = new SingleGraph("Custom1");
+        Graph g = new SingleGraph("Custom2");
         FileSourceDOT fs = new FileSourceDOT();
         fs.addSink(g);
-        fs.readAll("graphs/Custom1/custom.dot");
+        fs.readAll("graphs/Custom2/custom2.dot");
 
         for (Edge e : g.getEdgeSet()) {
             e.setAttribute("ui.label", e.getAttribute("capacity").toString());
@@ -34,7 +34,7 @@ public class MetaRun {
         MetaGraph mg = mgs.getMeta();
 
         try {
-            writeGraph(mg.getInternal(), "Custom1/MG_Custom1TargetOnly.dot");
+            writeGraph(mg.getInternal(), "Custom2/MG_Custom2TargetOnly.dot");
         } catch (IOException e) {
             System.out.println(e);
         }

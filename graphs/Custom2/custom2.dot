@@ -22,5 +22,4 @@ graph {
 	"f" -> "i" ["label"="9","capacity"=9.0];
 	"g" -> "i" ["label"="2","capacity"=2.0];
 	"i" -> "T" ["label"="7","capacity"=7.0];
-
 }
