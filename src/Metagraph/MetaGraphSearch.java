@@ -295,12 +295,15 @@ public class MetaGraphSearch {
         for (ArrayList<HashMap<String, Double>> list : partialStates.values()) {
             listOfPartialStateLists.add(list);
         }
+
         return recursiveStateAccumulator(listOfPartialStateLists);
     }
 
     private ArrayList<HashMap<String, Double>> recursiveStateAccumulator(ArrayList<ArrayList<HashMap<String, Double>>> valueLists) {
         ArrayList<HashMap<String, Double>> merged = new ArrayList<>();
-        if (valueLists.size() == 1) {
+        if (valueLists.size() == 0) {
+            return merged;
+        } else if (valueLists.size() == 1) {
             return valueLists.get(0);
         } else {
             ArrayList<HashMap<String, Double>> current = valueLists.remove(0);
