@@ -1,6 +1,5 @@
 package Metagraph;
 
-import com.google.common.collect.Sets;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
@@ -285,7 +284,11 @@ public class MetaGraphSearch {
     }
 
     private ArrayList<HashMap<String, Double>> generateCompleteStates(HashMap<String, ArrayList<HashMap<String, Double>>> partialStates) {
-        return recursiveStateAccumulator((ArrayList<ArrayList<HashMap<String, Double>>>) partialStates.values());
+        ArrayList<ArrayList<HashMap<String, Double>>> listOfPartialStateLists = new ArrayList<>();
+        for (ArrayList<HashMap<String, Double>> list : partialStates.values()) {
+            listOfPartialStateLists.add(list);
+        }
+        return recursiveStateAccumulator(listOfPartialStateLists);
     }
 
     private ArrayList<HashMap<String, Double>> recursiveStateAccumulator(ArrayList<ArrayList<HashMap<String, Double>>> valueLists) {
