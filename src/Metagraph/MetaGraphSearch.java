@@ -1,6 +1,7 @@
 package Metagraph;
 
 import org.graphstream.graph.Edge;
+import org.graphstream.graph.ElementNotFoundException;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import scala.Int;
@@ -119,89 +120,89 @@ public class MetaGraphSearch {
     /**
      * Given a state, will create new states by moving remaining flow across the available nbrEdge
      */
-    private Boolean recursiveMetaNodeCompletion(HashMap<String, Double> newState, Queue<Edge> nbrEdges, double remainingFlow, MetaNode parent) {
-        System.out.println("Called with: " + newState + " remaining flow: " + remainingFlow);
-        if (nbrEdges.isEmpty()) {
-            // If no more edges exist, all possible neighboring states have been explored, so stop search for neighbors
-            return false;
-        } else {
-            // Get the next nbr and its capacity
-            Edge nbrEdge = nbrEdges.poll(); // Known to be non-empty
-            Node nbrNode = nbrEdge.getTargetNode();
-            double nbrCapacity = nbrEdge.getAttribute("capacity");
-
-            // While we have flow to move, or we hit the capacity
-            // explore available states from moving "i" flow to the nbr
-            for (double i = 1.0; i <= Math.min(remainingFlow, nbrCapacity); i += 1.0) {
-                if (newState.containsKey(nbrNode.getId())) {
-                    // If there is already flow at this node add on to it
-                    newState.put(nbrNode.getId(), newState.get(nbrNode.getId()) + 1);
-                } else {
-                    // If there is no flow already at this node, place "i" flow there
-                    newState.put(nbrNode.getId(), 1.0);
-                }
-
-//                System.out.println("State after flow move: " + newState);
-
-                // See if the flow move resulted in a valid state
-                MetaNode potential = new MetaNode(newState.toString(), newState);
-                System.out.println("Potential: " + potential.getState());
-
-                if (potential.isValid(meta.getFlow())) {
-                    if (meta.hasNode(potential.getId())) {
-                        // If this metanode already exists in the graph, simply add and edge
-                        meta.addDirectedMetaEdge(parent.getId(), potential.getId());
-                        explored.push(potential);
-                        System.out.println("Added: " + potential.getState());
-                    } else {
-                        // If this metanode is not in the graph, add the node and make an edge
-                        if (meta.addMetaNode(potential)) {
-                            meta.addDirectedMetaEdge(parent.getId(), potential.getId());
-                            explored.push(potential);
-                            System.out.println("Added: " + potential.getState());
-                        }
-                    }
-                } else {
-                    // If a valid state cannot be formed by moving all the flow
-                    // Try moving only some of the flow and keeping some at the node
-                    System.out.println("have: " + newState + " with: " + remainingFlow);
-                    HashMap<String, Double> partial = new HashMap<>();
-                    partial.putAll(newState);
-                    partial.put(nbrEdge.getSourceNode().toString(), remainingFlow - 1);
-                    System.out.println("partial move into: " + partial);
-
-                    // Now check that the partial flow move state is valid
-                    potential = new MetaNode(partial.toString(), partial);
-                    if (potential.isValid(meta.getFlow())) {
-                        if (meta.hasNode(potential.getId())) {
-                            // If this metanode already exists in the graph, simply add and edge
-                            meta.addDirectedMetaEdge(parent.getId(), potential.getId());
-                            explored.push(potential);
-                            System.out.println("Added: " + potential.getState());
-                        } else {
-                            // If this metanode is not in the graph, add the node and make an edge
-                            if (meta.addMetaNode(potential)) {
-                                meta.addDirectedMetaEdge(parent.getId(), potential.getId());
-                                explored.push(potential);
-                                System.out.println("Added: " + potential.getState());
-                            }
-                        }
-                    }
-                }
-               // Recurse down to find states involving other neighbors
-                HashMap<String, Double> temp = new HashMap<>();
-                temp.putAll(newState);
-                recursiveMetaNodeCompletion(temp, nbrEdges, remainingFlow - i, parent);
-            }
-            // TODO: WHAT DOES THIS DO?
-            // Without it, states in which no flow remains at the start node after the
-            // first step are not found, i.e. only partial states are explored (which we don't want)
-            // So, it needs to be here.
-            nbrEdges.add(nbrEdge);
-
-            return false;
-        }
-    }
+//    private Boolean recursiveMetaNodeCompletion(HashMap<String, Double> newState, Queue<Edge> nbrEdges, double remainingFlow, MetaNode parent) {
+//        System.out.println("Called with: " + newState + " remaining flow: " + remainingFlow);
+//        if (nbrEdges.isEmpty()) {
+//            // If no more edges exist, all possible neighboring states have been explored, so stop search for neighbors
+//            return false;
+//        } else {
+//            // Get the next nbr and its capacity
+//            Edge nbrEdge = nbrEdges.poll(); // Known to be non-empty
+//            Node nbrNode = nbrEdge.getTargetNode();
+//            double nbrCapacity = nbrEdge.getAttribute("capacity");
+//
+//            // While we have flow to move, or we hit the capacity
+//            // explore available states from moving "i" flow to the nbr
+//            for (double i = 1.0; i <= Math.min(remainingFlow, nbrCapacity); i += 1.0) {
+//                if (newState.containsKey(nbrNode.getId())) {
+//                    // If there is already flow at this node add on to it
+//                    newState.put(nbrNode.getId(), newState.get(nbrNode.getId()) + 1);
+//                } else {
+//                    // If there is no flow already at this node, place "i" flow there
+//                    newState.put(nbrNode.getId(), 1.0);
+//                }
+//
+////                System.out.println("State after flow move: " + newState);
+//
+//                // See if the flow move resulted in a valid state
+//                MetaNode potential = new MetaNode(newState.toString(), newState);
+//                System.out.println("Potential: " + potential.getState());
+//
+//                if (potential.isValid(meta.getFlow())) {
+//                    if (meta.hasNode(potential.getId())) {
+//                        // If this metanode already exists in the graph, simply add and edge
+//                        meta.addDirectedMetaEdge(parent.getId(), potential.getId());
+//                        explored.push(potential);
+//                        System.out.println("Added: " + potential.getState());
+//                    } else {
+//                        // If this metanode is not in the graph, add the node and make an edge
+//                        if (meta.addMetaNode(potential)) {
+//                            meta.addDirectedMetaEdge(parent.getId(), potential.getId());
+//                            explored.push(potential);
+//                            System.out.println("Added: " + potential.getState());
+//                        }
+//                    }
+//                } else {
+//                    // If a valid state cannot be formed by moving all the flow
+//                    // Try moving only some of the flow and keeping some at the node
+//                    System.out.println("have: " + newState + " with: " + remainingFlow);
+//                    HashMap<String, Double> partial = new HashMap<>();
+//                    partial.putAll(newState);
+//                    partial.put(nbrEdge.getSourceNode().toString(), remainingFlow - 1);
+//                    System.out.println("partial move into: " + partial);
+//
+//                    // Now check that the partial flow move state is valid
+//                    potential = new MetaNode(partial.toString(), partial);
+//                    if (potential.isValid(meta.getFlow())) {
+//                        if (meta.hasNode(potential.getId())) {
+//                            // If this metanode already exists in the graph, simply add and edge
+//                            meta.addDirectedMetaEdge(parent.getId(), potential.getId());
+//                            explored.push(potential);
+//                            System.out.println("Added: " + potential.getState());
+//                        } else {
+//                            // If this metanode is not in the graph, add the node and make an edge
+//                            if (meta.addMetaNode(potential)) {
+//                                meta.addDirectedMetaEdge(parent.getId(), potential.getId());
+//                                explored.push(potential);
+//                                System.out.println("Added: " + potential.getState());
+//                            }
+//                        }
+//                    }
+//                }
+//               // Recurse down to find states involving other neighbors
+//                HashMap<String, Double> temp = new HashMap<>();
+//                temp.putAll(newState);
+//                recursiveMetaNodeCompletion(temp, nbrEdges, remainingFlow - i, parent);
+//            }
+//            // TODO: WHAT DOES THIS DO?
+//            // Without it, states in which no flow remains at the start node after the
+//            // first step are not found, i.e. only partial states are explored (which we don't want)
+//            // So, it needs to be here.
+//            nbrEdges.add(nbrEdge);
+//
+//            return false;
+//        }
+//    }
 
     /**
      * Get the nodes that are contained in the specified metanode
@@ -266,14 +267,14 @@ public class MetaGraphSearch {
         }
 //        System.out.println("Partial states: " + partialStates);
         ArrayList<HashMap<String, Double>> completeStates = generateCompleteStates(partialStates);
-        System.out.println("Complete states: " + completeStates);
+//        System.out.println("Complete states: " + completeStates);
 
 
         // 3. Push all found completed states (metanodes) onto the stack, then return
         for (HashMap<String, Double> state : completeStates) {
             MetaNode metaNode = new MetaNode(state.toString(), state);
             if (metaNode.isValid(meta.getFlow())) {
-                if (meta.contains(metaNode.getState())) {
+                if (meta.hasNode(metaNode.getId())) {
                     // if this is a valid metanode and it is already in the graph
                     // just add an edge, don't push onto stack (it's already been explored)
                     meta.addDirectedMetaEdge(current.getId(), metaNode.getId());
@@ -325,7 +326,8 @@ public class MetaGraphSearch {
         ArrayList<HashMap<String, Double>> states = new ArrayList<>();
         if (j < 0) {
             HashMap<String, Double> state = new HashMap<>();
-            state.put(parent.getId(), n);
+            if (n != 0.0)
+                state.put(parent.getId(), n);
             states.add(state);
         } else {
             // 1. for each inner node in current's state, generate the possible partial states
