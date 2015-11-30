@@ -253,7 +253,7 @@ public class MetaGraphSearch {
         for (Node node : innerNodes) {
             double requiredFlow = current.getState().get(node.getId());
             ArrayList<Node> nbrs = getInnerNodeNbrs(node);
-            System.out.println("Nbrs: " + nbrs);
+//            System.out.println("Nbrs: " + nbrs);
             int j = nbrs.size() - 1; // start with the first nbr of node
 
             // 2. Merge each possible combination of partial states to create complete states
@@ -264,7 +264,7 @@ public class MetaGraphSearch {
                 continue;
             }
         }
-        System.out.println("Partial states: " + partialStates);
+//        System.out.println("Partial states: " + partialStates);
         ArrayList<HashMap<String, Double>> completeStates = generateCompleteStates(partialStates);
         System.out.println("Complete states: " + completeStates);
 
@@ -272,12 +272,18 @@ public class MetaGraphSearch {
         // 3. Push all found completed states (metanodes) onto the stack, then return
         for (HashMap<String, Double> state : completeStates) {
             MetaNode metaNode = new MetaNode(state.toString(), state);
-            if (metaNode.isValid(meta.getFlow()) && !meta.contains(metaNode.getState())) {
-                // if this is a valid metanode and we haven't seen it already
-                explored.push(metaNode);
+            if (metaNode.isValid(meta.getFlow())) {
+                if (meta.contains(metaNode.getState())) {
+                    // if this is a valid metanode and it is already in the graph
+                    // just add an edge, don't push onto stack (it's already been explored)
+                    meta.addDirectedMetaEdge(current.getId(), metaNode.getId());
+                } else {
+                    // if this is a valid metanode and we haven't seen it already
+                    explored.push(metaNode);
 
-                meta.addMetaNode(metaNode);
-                meta.addDirectedMetaEdge(current.getId(), metaNode.getId());
+                    meta.addMetaNode(metaNode);
+                    meta.addDirectedMetaEdge(current.getId(), metaNode.getId());
+                }
             }
         }
 
@@ -314,7 +320,7 @@ public class MetaGraphSearch {
      * @return A partial state
      */
     private ArrayList<HashMap<String, Double>> recursiveNbrSearch(double n, Node parent, ArrayList<Node> nbrs, int j) {
-        System.out.println("Rec. nbr. search with: n=" + n + " parent=" + parent + " nbrs=" + nbrs + " j=" + j);
+//        System.out.println("Rec. nbr. search with: n=" + n + " parent=" + parent + " nbrs=" + nbrs + " j=" + j);
 
         ArrayList<HashMap<String, Double>> states = new ArrayList<>();
         if (j < 0) {
@@ -327,7 +333,7 @@ public class MetaGraphSearch {
             for (double i = 0; i <= Math.min(n, capacity(parent, nbr)); i++) {
                 HashMap<String, Double>  partialState = new HashMap<>();
                 // move i flow to this nbr
-                System.out.println("Moving i=" + i + " flow to nbr: " + nbr);
+//                System.out.println("Moving i=" + i + " flow to nbr: " + nbr);
 
                 if (i != 0.0) {
                     // if 0 flow, don't include in the state
@@ -336,7 +342,7 @@ public class MetaGraphSearch {
 
                 // allocate the remaining flow for the remaining nbrs
                 ArrayList<HashMap<String, Double>> foundStates = recursiveNbrSearch(n - i, parent, nbrs, j - 1);
-                System.out.println("Found rec. partial states: " + foundStates);
+//                System.out.println("Found rec. partial states: " + foundStates);
 
                 if (foundStates.size() == 0) {
                     states.add(partialState);
@@ -345,7 +351,7 @@ public class MetaGraphSearch {
                         // merge the flow move to this nbr with flow that went to the other nbrs
                         HashMap<String, Double> mergedState = mergePartialStates(partialState, state);
                         states.add(mergedState);
-                        System.out.println("Found partial state: " + mergedState);
+//                        System.out.println("Found partial state: " + mergedState);
                     }
                 }
             }
