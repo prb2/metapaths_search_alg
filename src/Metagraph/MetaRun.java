@@ -2,7 +2,6 @@ package Metagraph;
 
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
-import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.stream.file.FileSink;
 import org.graphstream.stream.file.FileSinkDOT;
@@ -29,7 +28,7 @@ public class MetaRun {
     }
 
     private static void run(Graph g, String start, String target, int desiredFlow) {
-        MetaGraphSearch mgs = new MetaGraphSearch();
+        MetaGraphCreation mgs = new MetaGraphCreation();
         mgs.constructMetaGraph(g, start, target, desiredFlow);
         MetaGraph mg = mgs.getMeta();
 

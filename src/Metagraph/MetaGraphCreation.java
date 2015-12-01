@@ -16,7 +16,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * Constructs a meta-graph in which nodes contain mappings of input graph nodes
  * to flow counts. After construction, the meta-graph can be searched.
  */
-public class MetaGraphSearch {
+public class MetaGraphCreation {
     /* The constructed meta-graph a.k.a MG */
     private MetaGraph meta;
     /* The input graph */
