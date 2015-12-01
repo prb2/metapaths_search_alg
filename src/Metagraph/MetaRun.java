@@ -2,6 +2,7 @@ package Metagraph;
 
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
+import org.graphstream.graph.Path;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.stream.file.FileSink;
 import org.graphstream.stream.file.FileSinkDOT;
@@ -14,17 +15,17 @@ import java.io.IOException;
  */
 public class MetaRun {
     public static void main(String args[]) throws IOException {
-        Graph g = new SingleGraph("Custom2");
+        Graph g = new SingleGraph("Custom1");
         FileSourceDOT fs = new FileSourceDOT();
         fs.addSink(g);
-        fs.readAll("graphs/Custom2/custom2.dot");
+        fs.readAll("graphs/Custom1/custom.dot");
 
         for (Edge e : g.getEdgeSet()) {
             e.setAttribute("ui.label", e.getAttribute("capacity").toString());
         }
 
 //        g.display();
-        run(g, "S", "T", 5);
+        run(g, "S", "T", 4);
     }
 
     private static void run(Graph g, String start, String target, int desiredFlow) {
@@ -32,8 +33,14 @@ public class MetaRun {
         mgs.constructMetaGraph(g, start, target, desiredFlow);
         MetaGraph mg = mgs.getMeta();
 
+        MetaGraphPathSearch search = new MetaGraphPathSearch();
+        Iterable<Path> paths = search.findPaths(mg, mg.getStartID(), mg.getTargetID());
+        for (Path path : paths) {
+            System.out.println("Found path: " + path.toString());
+        }
+
         try {
-            writeGraph(mg.getInternal(), "Custom2/MG_Custom2TargetOnly.dot");
+            writeGraph(mg.getInternal(), "Custom1/MG_Custom1TargetOnly.dot");
         } catch (IOException e) {
             System.out.println(e);
         }

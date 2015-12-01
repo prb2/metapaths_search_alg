@@ -32,6 +32,10 @@ public class MetaGraph {
 
     private Graph internal;
 
+    private String startID;
+
+    private String targetID;
+
     public double getFlow() {
         return flow;
     }
@@ -97,5 +101,21 @@ public class MetaGraph {
 
     public boolean hasState(Map<String, Double> newState) {
         return stateMap.containsValue(newState);
+    }
+
+    public void setStartID(String startID) {
+        this.startID = startID;
+    }
+
+    public void setTargetID(String targetID) {
+        this.targetID = targetID;
+    }
+
+    public String getStartID() {
+        return startID;
+    }
+
+    public String getTargetID() {
+        return targetID;
     }
 }

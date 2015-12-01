@@ -40,12 +40,17 @@ public class MetaGraphCreation {
         explored = new Stack<MetaNode>();
 
         // Create the start state
-        HashMap<String, Double> state = new HashMap<>();
+        HashMap<String, Double> startState = new HashMap<>();
         // All the flow starts off in the starting node
-        state.put(s, desiredFlow);
-        String startNodeName = state.toString();
+        startState.put(s, desiredFlow);
+        String startNodeName = startState.toString();
         // Add the starting metanode to the metagraph
-        meta.addMetaNode(new MetaNode(startNodeName, state));
+        meta.addMetaNode(new MetaNode(startNodeName, startState));
+        meta.setStartID(startNodeName);
+
+        HashMap<String, Double> targetState = new HashMap<>();
+        targetState.put(t, desiredFlow);
+        meta.setTargetID(targetState.toString());
 
         // Add the starting node into the stack of node to be explored
         explored.push(meta.getMetaNode(startNodeName));
