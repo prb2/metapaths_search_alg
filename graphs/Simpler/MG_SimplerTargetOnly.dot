@@ -1,8 +1,8 @@
 graph {
-	"{a=4.0}" ["result"="org.graphstream.algorithm.Dijkstra$Data@31cefde0","state"="{a=4.0}"];
-	"{b=3.0, c=1.0}" ["result"="org.graphstream.algorithm.Dijkstra$Data@439f5b3d","state"="{b=3.0, c=1.0}"];
-	"{b=2.0, c=2.0}" ["result"="org.graphstream.algorithm.Dijkstra$Data@1d56ce6a","state"="{b=2.0, c=2.0}"];
-	"{d=4.0}" ["result"="org.graphstream.algorithm.Dijkstra$Data@5197848c","state"="{d=4.0}"];
+	"{a=4.0}" ["result"="org.graphstream.algorithm.Dijkstra$Data@17f052a3","state"="{a=4.0}"];
+	"{b=3.0, c=1.0}" ["result"="org.graphstream.algorithm.Dijkstra$Data@2e0fa5d3","state"="{b=3.0, c=1.0}"];
+	"{b=2.0, c=2.0}" ["result"="org.graphstream.algorithm.Dijkstra$Data@5010be6","state"="{b=2.0, c=2.0}"];
+	"{d=4.0}" ["result"="org.graphstream.algorithm.Dijkstra$Data@685f4c2e","state"="{d=4.0}"];
 	"{a=4.0}" -- "{b=3.0, c=1.0}" ["length"=1];
 	"{a=4.0}" -- "{b=2.0, c=2.0}" ["length"=1];
 	"{b=2.0, c=2.0}" -- "{d=4.0}" ["length"=1];

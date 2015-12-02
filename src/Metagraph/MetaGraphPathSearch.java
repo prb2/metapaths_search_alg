@@ -1,9 +1,8 @@
 package Metagraph;
 
 import org.graphstream.algorithm.Dijkstra;
-import org.graphstream.graph.Edge;
-import org.graphstream.graph.Graph;
-import org.graphstream.graph.Path;
+import org.graphstream.graph.*;
+import org.graphstream.graph.implementations.SingleGraph;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -29,4 +28,23 @@ public class MetaGraphPathSearch {
         Iterable<Path> paths = dj.getAllPaths(g.getNode(target));
         return paths;
     }
+
+    public Graph unionize(Iterable<Path> paths) {
+        SingleGraph union = new SingleGraph("Union");
+        for (Path path : paths) {
+            for (Node n : path.getEachNode()) {
+                try {
+                    union.addNode(n.getId());
+                    union.getNode(n.getId()).setAttribute("ui.label", n.getId());
+                } catch (IdAlreadyInUseException e) {}
+            }
+            for (Edge e : path.getEachEdge()) {
+                try {
+                    union.addEdge(e.getId(), e.getNode0().getId(), e.getNode1().getId(), e.isDirected());
+                } catch (IdAlreadyInUseException i) {}
+            }
+        }
+        return union;
+    }
 }
+
