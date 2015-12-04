@@ -1,0 +1,20 @@
+graph {
+	"S" ["ui.label"="S"];
+	"T" ["ui.label"="T"];
+	"a" ["ui.label"="a"];
+	"b" ["ui.label"="b"];
+	"c" ["ui.label"="c"];
+	"d" ["ui.label"="d"];
+	"e" ["ui.label"="e"];
+	"f" ["ui.label"="f"];
+	"g" ["ui.label"="g"];
+	"S" -> "a" ["capacity"=4.0];
+	"a" -> "b" ["capacity"=6.0];
+	"b" -> "T" ["capacity"=3.0];
+	"S" -> "c" ["capacity"=7.0];
+	"c" -> "d" ["capacity"=8.0];
+	"d" -> "e" ["capacity"=4.0];
+	"e" -> "f" ["capacity"=5.0];
+	"f" -> "g" ["capacity"=8.0];
+	"g" -> "T" ["capacity"=6.0];
+}

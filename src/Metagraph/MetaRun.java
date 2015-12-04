@@ -15,37 +15,46 @@ import java.io.IOException;
  */
 public class MetaRun {
     public static void main(String args[]) throws IOException {
-        Graph g = new SingleGraph("Custom2");
+        Graph g = new SingleGraph("Custom3");
         FileSourceDOT fs = new FileSourceDOT();
         fs.addSink(g);
-        fs.readAll("graphs/Custom2/custom2.dot");
+        fs.readAll("graphs/Custom3/custom3.dot");
 
         for (Edge e : g.getEdgeSet()) {
             e.setAttribute("ui.label", e.getAttribute("capacity").toString());
         }
 
 //        g.display();
-        run(g, "S", "T", 7);
+        run(g, "S", "T", 7, g.getId());
     }
 
-    private static void run(Graph g, String start, String target, int desiredFlow) {
+    private static void run(Graph g, String start, String target, int desiredFlow, String graphName) {
         MetaGraphCreation mgs = new MetaGraphCreation();
         mgs.constructMetaGraph(g, start, target, desiredFlow);
         MetaGraph mg = mgs.getMeta();
 
-        MetaGraphPathSearch search = new MetaGraphPathSearch();
-        Iterable<Path> paths = search.findPaths(mg, mg.getStartID(), mg.getTargetID());
-        for (Path path : paths) {
-            System.out.println("Found path: " + path.toString());
-        }
-        Graph union = search.unionize(paths);
-//        union.display(true);
-
         try {
-            writeGraph(mg.getInternal(), "Custom2/MG_Custom2TargetOnly.dot");
-            writeGraph(union, "Custom2/Union_Custom2TargetOnly.dot");
+            writeGraph(mg.getInternal(), graphName + "/MG_" + graphName + ".dot");
+
         } catch (IOException e) {
             System.out.println(e);
+        }
+
+        // Search the MG for paths
+        MetaGraphPathSearch search = new MetaGraphPathSearch();
+        Iterable<Path> paths = search.findPaths(mg, mg.getStartID(), mg.getTargetID());
+        if (paths.iterator().hasNext()) {
+            for (Path path : paths) {
+                System.out.println("Found path: " + path.toString());
+            }
+            Graph union = search.unionize(paths);
+            union.display(true);
+
+            try {
+                writeGraph(union, graphName + "/Union_" + graphName + ".dot");
+            } catch (IOException e) {
+                System.out.println(e);
+            }
         }
     }
 
