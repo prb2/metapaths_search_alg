@@ -60,7 +60,7 @@ public class MetaGraph {
             node.setAttribute("state", metanode.getState().toString());
             metaNodes.put(metanode.getId(), metanode);
             stateMap.put(metanode.getId(), metanode.getState());
-            System.out.println("Added new meta nbr to MG with ID: " + metanode.getId() + " and value: " + metanode.getState());
+//            System.out.println("Added new meta nbr to MG with ID: " + metanode.getId() + " and value: " + metanode.getState());
             return true;
         } else {
             System.out.println("State was not valid. Node was not added to meta-graph.");
@@ -131,6 +131,7 @@ public class MetaGraph {
      * @param terminus The terminal node to start pruning from
      */
     public void prune(MetaNode terminus) {
+        System.out.println("Recieved node for pruning: " + terminus.getId());
 
     }
 

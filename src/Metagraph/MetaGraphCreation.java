@@ -80,16 +80,16 @@ public class MetaGraphCreation {
         // As long as there are metanodes to explore, keep searching
         while (!explored.empty()) {
             MetaNode current = explored.pop();
-            System.out.println("Popped from stack: " + current.getState());
+//            System.out.println("Popped from stack: " + current.getState());
             if (current.isTarget(targetID, flow)) {
                 // Reached the target state, don't need to find neighbors of target
                 System.out.println("Current is target");
                 // Will continue to explore metanodes left on the stack
             } else {
-                System.out.println("Finding new meta nbr for: " + current.getState().toString());
+//                System.out.println("Finding new meta nbr for: " + current.getState().toString());
                 // Find all neighbors of this meta node, then continue explores metanodes from the stack
                 int nbrCount = iterativeFindMetaNbrs(current);
-                if (nbrCount == 0) {
+                if (nbrCount == 0 && !current.isTarget(targetID, flow)) {
                     // If current has no nbrs, we will prune it
                     meta.prune(current);
                 }
@@ -110,7 +110,7 @@ public class MetaGraphCreation {
         for (Node node : innerNodes) {
             double requiredFlow = current.getState().get(node.getId());
             ArrayList<Node> nbrs = getInnerNodeNbrs(node);
-            System.out.println("Nbrs: " + nbrs);
+//            System.out.println("Nbrs: " + nbrs);
             int j = nbrs.size() - 1; // start with the first nbr of node
 
             // 2. Merge each possible combination of partial states to create complete states
