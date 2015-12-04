@@ -11,6 +11,7 @@ import scala.util.regexp.Base;
 
 import java.io.IOError;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,6 +26,9 @@ public class MetaGraph {
      */
     Map<String, Map<String, Double>> stateMap;
     Map<String, MetaNode> metaNodes;
+
+    /* The collection of nodes which have been pruned from the graph */
+    HashMap<String, MetaNode> deadset = new HashMap<>(); // Maps the pruned node's id to its parent
 
     public Graph getInternal() {
         return internal;
@@ -117,4 +121,17 @@ public class MetaGraph {
     public String getTargetID() {
         return targetID;
     }
+
+    public HashMap<String, MetaNode> getDeadset() {
+        return deadset;
+    }
+
+    /**
+     * Prunes the metagraph to remove terminal branches
+     * @param terminus The terminal node to start pruning from
+     */
+    public void prune(MetaNode terminus) {
+
+    }
+
 }

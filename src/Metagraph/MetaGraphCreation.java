@@ -88,7 +88,11 @@ public class MetaGraphCreation {
             } else {
                 System.out.println("Finding new meta nbr for: " + current.getState().toString());
                 // Find all neighbors of this meta node, then continue explores metanodes from the stack
-                iterativeFindMetaNbrs(current);
+                int nbrCount = iterativeFindMetaNbrs(current);
+                if (nbrCount == 0) {
+                    // If current has no nbrs, we will prune it
+                    meta.prune(current);
+                }
             }
         }
 
@@ -97,7 +101,8 @@ public class MetaGraphCreation {
     /**
      * Finds the meta nbrs of current and adds them to the stack.
      */
-    private void iterativeFindMetaNbrs(MetaNode current) {
+    private int iterativeFindMetaNbrs(MetaNode current) {
+        int nbrCount = 0;
         // Maps each inner node of current to a list of all possible moves for the flow at that node
         HashMap<String, ArrayList<HashMap<String, Double>>> partialStates = new HashMap<>();
 
@@ -129,18 +134,30 @@ public class MetaGraphCreation {
                     // if this is a valid metanode and it is already in the graph
                     // just add an edge, don't push onto stack (it's already been explored)
                     meta.addDirectedMetaEdge(current.getId(), metaNode.getId());
+
+                    nbrCount += 1;
                 } else {
                     // if this is a valid metanode and we haven't seen it already
                     explored.push(metaNode);
 
                     meta.addMetaNode(metaNode);
                     meta.addDirectedMetaEdge(current.getId(), metaNode.getId());
+
+                    nbrCount += 1;
                 }
             }
         }
 
+        return nbrCount;
     }
 
+    /********** Neighbor Search Methods **********/
+
+    /**
+     *
+     * @param partialStates
+     * @return
+     */
     private ArrayList<HashMap<String, Double>> generateCompleteStates(HashMap<String, ArrayList<HashMap<String, Double>>> partialStates) {
         ArrayList<ArrayList<HashMap<String, Double>>> listOfPartialStateLists = new ArrayList<>();
         for (ArrayList<HashMap<String, Double>> list : partialStates.values()) {
@@ -150,6 +167,11 @@ public class MetaGraphCreation {
         return recursiveStateAccumulator(listOfPartialStateLists);
     }
 
+    /**
+     *
+     * @param valueLists
+     * @return
+     */
     private ArrayList<HashMap<String, Double>> recursiveStateAccumulator(ArrayList<ArrayList<HashMap<String, Double>>> valueLists) {
         ArrayList<HashMap<String, Double>> merged = new ArrayList<>();
         if (valueLists.size() == 0) {
@@ -217,6 +239,12 @@ public class MetaGraphCreation {
         return states;
     }
 
+    /**
+     *
+     * @param partialState1
+     * @param partialState2
+     * @return
+     */
     private HashMap<String, Double> mergePartialStates(HashMap<String, Double> partialState1, HashMap<String, Double> partialState2) {
         HashMap<String, Double> merged = new HashMap<>();
         merged.putAll(partialState1);
@@ -230,6 +258,15 @@ public class MetaGraphCreation {
         return merged;
     }
 
+
+    /********** Helper Methods **********/
+
+    /**
+     *
+     * @param parent
+     * @param node
+     * @return
+     */
     private double capacity(Node parent, Node node) {
         if (parent.getId() == node.getId()) {
             return Double.MAX_VALUE;
@@ -239,6 +276,11 @@ public class MetaGraphCreation {
         }
     }
 
+    /**
+     *
+     * @param n
+     * @return
+     */
     private ArrayList<Node> getInnerNodeNbrs(Node n) {
         ArrayList<Node> nbrs = new ArrayList<>();
         for (Edge e : n.getEachLeavingEdge()) {
@@ -260,6 +302,10 @@ public class MetaGraphCreation {
         return innerNodes;
     }
 
+    /**
+     *
+     * @return
+     */
     public MetaGraph getMeta() {
         return meta;
     }
