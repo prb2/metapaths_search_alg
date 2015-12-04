@@ -39,6 +39,10 @@ public class MetaGraphCreation {
         targetID = t;
         explored = new Stack<MetaNode>();
 
+        // Create a self edge on the target node
+        base.addEdge("TargetSelf", t, t, true);
+        base.getEdge("TargetSelf").setAttribute("capacity", Double.MAX_VALUE);
+
         // Create the start state
         HashMap<String, Double> startState = new HashMap<>();
         // All the flow starts off in the starting node
@@ -101,7 +105,7 @@ public class MetaGraphCreation {
         for (Node node : innerNodes) {
             double requiredFlow = current.getState().get(node.getId());
             ArrayList<Node> nbrs = getInnerNodeNbrs(node);
-//            System.out.println("Nbrs: " + nbrs);
+            System.out.println("Nbrs: " + nbrs);
             int j = nbrs.size() - 1; // start with the first nbr of node
 
             // 2. Merge each possible combination of partial states to create complete states

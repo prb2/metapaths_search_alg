@@ -43,19 +43,19 @@ public class MetaRun {
         // Search the MG for paths
         MetaGraphPathSearch search = new MetaGraphPathSearch();
         Iterable<Path> paths = search.findPaths(mg, mg.getStartID(), mg.getTargetID());
-        if (paths.iterator().hasNext()) {
-            for (Path path : paths) {
-                System.out.println("Found path: " + path.toString());
-            }
-            Graph union = search.unionize(paths);
-            union.display(true);
-
-            try {
-                writeGraph(union, graphName + "/Union_" + graphName + ".dot");
-            } catch (IOException e) {
-                System.out.println(e);
-            }
-        }
+//        if (paths.iterator().hasNext()) {
+//            for (Path path : paths) {
+//                System.out.println("Found path: " + path.toString());
+//            }
+//            Graph union = search.unionize(paths);
+//            union.display(true);
+//
+//            try {
+//                writeGraph(union, graphName + "/Union_" + graphName + ".dot");
+//            } catch (IOException e) {
+//                System.out.println(e);
+//            }
+//        }
     }
 
 
