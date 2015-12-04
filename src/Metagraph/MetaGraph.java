@@ -1,5 +1,6 @@
 package Metagraph;
 
+import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.AbstractGraph;
@@ -28,7 +29,7 @@ public class MetaGraph {
     Map<String, MetaNode> metaNodes;
 
     /* The collection of nodes which have been pruned from the graph */
-    HashMap<String, MetaNode> deadset = new HashMap<>(); // Maps the pruned node's id to its parent
+    HashMap<MetaNode, ArrayList<MetaNode>> deadset = new HashMap<>(); // Maps the pruned node to a list of its parents
 
     public Graph getInternal() {
         return internal;
@@ -122,8 +123,8 @@ public class MetaGraph {
         return targetID;
     }
 
-    public HashMap<String, MetaNode> getDeadset() {
-        return deadset;
+    public boolean inDeadset(MetaNode node) {
+        return deadset.containsKey(node);
     }
 
     /**
@@ -131,8 +132,29 @@ public class MetaGraph {
      * @param terminus The terminal node to start pruning from
      */
     public void prune(MetaNode terminus) {
-        System.out.println("Recieved node for pruning: " + terminus.getId());
+        System.out.println("Received node for pruning: " + terminus.getId());
+        HashMap<String, Double> endState = terminus.getState();
+        Node endNode = internal.getNode(endState.toString());
+        // Find the terminal node's parents
+        ArrayList<MetaNode> parents = new ArrayList<>();
+        for (Edge edge : endNode.getEachEnteringEdge()) {
+            Node parent = edge.getSourceNode();
+            parents.add(getMetaNode(parent.getId()));
+        }
+        // Add this node to the dead set
+        deadset.put(terminus, parents);
 
+        // Remove it from the MG
+        internal.removeNode(endNode);
+
+        // Check if any of its parents can be pruned
+        for (MetaNode parent : parents) {
+            Node node = internal.getNode(parent.getState().toString());
+            if (node.getLeavingEdgeSet().size() == 0) {
+                // if the parent has no children, it is also a dead end and can be pruned
+                prune(parent);
+            }
+        }
     }
 
 }

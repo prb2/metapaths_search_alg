@@ -129,7 +129,7 @@ public class MetaGraphCreation {
         // 3. Push all found completed states (metanodes) onto the stack, then return
         for (HashMap<String, Double> state : completeStates) {
             MetaNode metaNode = new MetaNode(state.toString(), state);
-            if (metaNode.isValid(meta.getFlow())) {
+            if (metaNode.isValid(meta.getFlow()) && !meta.inDeadset(metaNode)) {
                 if (meta.hasNode(metaNode.getId())) {
                     // if this is a valid metanode and it is already in the graph
                     // just add an edge, don't push onto stack (it's already been explored)

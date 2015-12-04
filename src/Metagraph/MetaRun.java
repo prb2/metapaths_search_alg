@@ -15,17 +15,17 @@ import java.io.IOException;
  */
 public class MetaRun {
     public static void main(String args[]) throws IOException {
-        Graph g = new SingleGraph("Custom3");
+        Graph g = new SingleGraph("Custom1");
         FileSourceDOT fs = new FileSourceDOT();
         fs.addSink(g);
-        fs.readAll("graphs/Custom3/custom3.dot");
+        fs.readAll("graphs/Custom1/custom1.dot");
 
         for (Edge e : g.getEdgeSet()) {
             e.setAttribute("ui.label", e.getAttribute("capacity").toString());
         }
 
 //        g.display();
-        run(g, "S", "T", 7, g.getId());
+        run(g, "S", "T", 4, g.getId());
     }
 
     private static void run(Graph g, String start, String target, int desiredFlow, String graphName) {
@@ -35,7 +35,7 @@ public class MetaRun {
         mg.display();
 
         try {
-            writeGraph(mg.getInternal(), graphName + "/MG_" + graphName + ".dot");
+            writeGraph(mg.getInternal(), graphName + "/MG_" + graphName + "_Pruned.dot");
 
         } catch (IOException e) {
             System.out.println(e);
@@ -52,7 +52,7 @@ public class MetaRun {
 //            union.display(true);
 
             try {
-                writeGraph(union, graphName + "/Union_" + graphName + ".dot");
+                writeGraph(union, graphName + "/Union_" + graphName + "_Pruned.dot");
             } catch (IOException e) {
                 System.out.println(e);
             }
