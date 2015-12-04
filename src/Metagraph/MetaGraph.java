@@ -93,7 +93,6 @@ public class MetaGraph {
         fs.writeAll(internal, "graphs/" + filename + ".dot");
     }
 
-
     public MetaNode getMetaNode(String metaNodeID) {
 //        return new MetaNode(metaNodeID, stateMap.get(metaNodeID));
         return metaNodes.get(metaNodeID);
