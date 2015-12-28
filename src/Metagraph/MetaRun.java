@@ -29,9 +29,9 @@ public class MetaRun {
 //        run(g, "S", "T", 7, g.getId());
 //    }
 
-    public void run(Graph g, String start, String target, int desiredFlow, String graphName) {
+    public void run(Graph g, String start, String target, int desiredFlow, String graphName, boolean pruning) {
         MetaGraphCreation mgs = new MetaGraphCreation();
-        mgs.constructMetaGraph(g, start, target, desiredFlow);
+        mgs.constructMetaGraph(g, start, target, desiredFlow, pruning);
         MetaGraph mg = mgs.getMeta();
 
         try {

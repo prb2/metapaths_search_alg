@@ -21,6 +21,7 @@ public class GUI extends JFrame {
     private final JTextField targetField = new JTextField();
     private final JTextField flowField = new JTextField();
     private final JButton searchBtn = new JButton("Search");
+    private final JCheckBox pruningCheck = new JCheckBox("Enable pruning:");
 
     public GUI() {
         initGUI();
@@ -52,6 +53,9 @@ public class GUI extends JFrame {
         flowField.setText("7");
         display.add(flowField);
 
+        pruningCheck.setSelected(true); // enable pruning by default
+        display.add(pruningCheck);
+
         display.add(searchBtn);
         searchBtn.addActionListener(new ActionListener() {
             @Override
@@ -68,7 +72,8 @@ public class GUI extends JFrame {
                 }
 
                 runner.run(g, startField.getText(), targetField.getText(),
-                        Integer.parseInt(flowField.getText()), g.getId());
+                        Integer.parseInt(flowField.getText()), g.getId(),
+                        pruningCheck.isSelected());
             }
         });
     }

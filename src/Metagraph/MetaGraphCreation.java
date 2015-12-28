@@ -27,12 +27,14 @@ public class MetaGraphCreation {
     private double flow;
     /* The ID of the target node in the input graph */
     private String targetID;
+    /* Whether terminal brances in the MG should be pruned during the search. */
+    private boolean PRUNING_ENABLED = true;
 
     /**
      * Initializes the meta-graph, adds the starting meta-nbr, and starts the
      * search for neighborhing meta-nbrs
      */
-    public void constructMetaGraph(Graph inputG, String s, String t, double desiredFlow) {
+    private void constructMetaGraph(Graph inputG, String s, String t, double desiredFlow) {
         meta = new MetaGraph("MetaGraph", desiredFlow);
         base = inputG;
         flow = desiredFlow;
@@ -74,6 +76,17 @@ public class MetaGraphCreation {
     }
 
     /**
+     * Same as previous definition of constructMetaGraph, except allows for an
+     * addition parameter for enabling/disabling pruning to be set. Only this
+     * version of the function is public; users should always call it to ensure
+     * that pruning is explicitly defined to be enabled or disabled.
+     */
+    public void constructMetaGraph(Graph inputG, String s, String t, double desiredFlow, boolean pruning) {
+        PRUNING_ENABLED = pruning;
+        constructMetaGraph(inputG, s, t, desiredFlow);
+    }
+
+    /**
      * Searches for neighbors of the already explored metanbrs
      */
     private void populateMetaGraph() {
@@ -89,7 +102,7 @@ public class MetaGraphCreation {
 //                System.out.println("Finding new meta nbr for: " + current.getState().toString());
                 // Find all neighbors of this meta node, then continue explores metanodes from the stack
                 int nbrCount = iterativeFindMetaNbrs(current);
-                if (nbrCount == 0 && !current.isTarget(targetID, flow)) {
+                if (PRUNING_ENABLED && nbrCount == 0 && !current.isTarget(targetID, flow)) {
                     // If current has no nbrs, we will prune it
                     meta.prune(current);
                 }
