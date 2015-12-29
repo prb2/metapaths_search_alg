@@ -124,9 +124,9 @@ public class MetaGraph {
     }
 
     public boolean inDeadset(MetaNode node) {
-        System.out.println("Checking if node: " + node);
-        System.out.println("Is in the deadset: ");
-        printDeadset();
+//        System.out.println("Checking if node: " + node);
+//        System.out.println("Is in the deadset: ");
+//        printDeadset();
         for (MetaNode deadNode : deadset.keySet()) {
             if (node.isSameAs(deadNode)) {
                 return true;
@@ -165,6 +165,7 @@ public class MetaGraph {
 
         // Remove it from the MG
         internal.removeNode(endNode);
+        metaNodes.remove(endNode.getId());
 
         // Check if any of its parents can be pruned
         for (MetaNode parent : parents) {
