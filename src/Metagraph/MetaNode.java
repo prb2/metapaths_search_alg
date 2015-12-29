@@ -1,7 +1,9 @@
 package Metagraph;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.graphstream.graph.Node;
 
+import javax.swing.text.StyledEditorKit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +47,10 @@ public class MetaNode {
         return false;
     }
 
+    public Boolean isSameAs(MetaNode other) {
+        return toString().equals(other.toString());
+    }
+
     public HashMap<String, Double> getState() {
         return state;
     }
@@ -55,5 +61,9 @@ public class MetaNode {
 
     public String getId() {
         return id;
+    }
+
+    public String toString() {
+        return getState().toString();
     }
 }

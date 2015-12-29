@@ -38,10 +38,10 @@ public class GUI extends JFrame {
         title.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
         display.add(title);
 
-        fileChooser.setText("graphs/Custom3/custom3.dot");
+        fileChooser.setText("graphs/Custom1/custom1.dot");
         display.add(fileChooser);
 
-        nameField.setText("Custom3");
+        nameField.setText("Custom1");
         display.add(nameField);
 
         startField.setText("S");
@@ -50,7 +50,7 @@ public class GUI extends JFrame {
         targetField.setText("T");
         display.add(targetField);
 
-        flowField.setText("7");
+        flowField.setText("4");
         display.add(flowField);
 
         pruningCheck.setSelected(true); // enable pruning by default

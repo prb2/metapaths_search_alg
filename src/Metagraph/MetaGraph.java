@@ -124,7 +124,26 @@ public class MetaGraph {
     }
 
     public boolean inDeadset(MetaNode node) {
-        return deadset.containsKey(node);
+        System.out.println("Checking if node: " + node);
+        System.out.println("Is in the deadset: ");
+        printDeadset();
+        for (MetaNode deadNode : deadset.keySet()) {
+            if (node.isSameAs(deadNode)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public HashMap<MetaNode, ArrayList<MetaNode>> getDeadset() {
+        return deadset;
+    }
+
+    public void printDeadset() {
+        System.out.println("Deadset: ");
+        for (MetaNode key : deadset.keySet()) {
+            System.out.println("\t " + key);
+        }
     }
 
     /**
