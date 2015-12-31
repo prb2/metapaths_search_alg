@@ -33,7 +33,7 @@
     \label{sec:Algorithms}
 
         \begin{algorithm}
-            \caption{Construct Meta-Graph}
+            \caption{ConstructMetaGraph}
             \KwIn{$g = (v, e)$: the input graph, $\{s,t\} \in v$: the start and
                 target compounds, $k$: flow/number of atoms to conserve}
             \KwOut{$G = (V, E)$: the meta-graph}
@@ -41,18 +41,56 @@
             $MG \gets (MV = \emptyset, ME = \emptyset)$ \tcc{initialize new
                 metagraph}
 
-            $start \gets \{s:k\}$ \tcc{create a metanode with all $k$ atoms at
+            $stack \gets$ initialize empty stack\;
+
+            $start \gets \{s:k\}$ \tcc{Create a metanode with all $k$ atoms at
                 the start compound}
 
             $V \gets V \cup start$ \tcc{Add the start state to the set of
                 metanodes}
 
+            $stack.push(start)$ \tcc{Add the start state to the stack to find
+                its neighbors}
+
+            $G \gets \textbf{PopulateMetaGraph}(G, stack, target)$ \tcc{Find
+                neighboring metanodes to build $G$}
+
+            \Return{G}
         \end{algorithm}
 
         \begin{algorithm}
-            \caption{}
-            \KwIn{}
-            \KwOut{}
+            \caption{PopulateMetaGraph}
+            \KwIn{$G=(V,E)$: the metagraph, $stack$: stack of metanodes that
+                need to be explored, $target$: the metanode state with all $k$
+                atoms at node $t$}
+            \KwOut{$G=(V,E)$: metagraph with any newly found metanodes added in}
+
+            \While{$|stack| > 0$}{
+                $current \gets stack.pop()$ \tcc{Pop off a metanode to explore}
+                \If{current = target}{
+                    continue \tcc{If we've reached the target, no need to find
+                        nbrs}
+                }
+                \Else{
+                    $nbrCount \gets \textbf{IterativeFindMetaNbrs}(current)$\;
+                    \If{nbrCount = 0 \textbf{and} current $\neq$ target}{
+                        $G \gets \textbf{Prune}(current)$ \tcc{This metanode is
+                        a terminus, so remove it from the metagraph}
+                    }
+                }
+            }
+            \Return{G}
+        \end{algorithm}
+
+        \begin{algorithm}
+            \caption{IterativeFindMetaNbrs}
+            \KwIn{$parent$: the metanode to find nbrs for}
+            \KwOut{$G=(V,E)$: metagraph with any newly found metanodes added in}
+            for each inner node n in N, for inner nbr m, move 0 to xi flow.
+            For each move, attempt to move the remaining flow at n to the remaining
+            inner nbrs m. Then repeat for each n in N. Check if any of the
+            newly generated states are valid and add them to MG and stack
+
 
         \end{algorithm}
 \end{document}
