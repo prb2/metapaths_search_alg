@@ -1,3 +1,5 @@
+## Metabolic Pathway Search
+
 This is the development repository for an algorithm for finding biologically
 meaningful pathways in metabolic networks. The goal is to find pathways in a
 graph of metabolic reactions that conserve a given number of carbon atoms from
