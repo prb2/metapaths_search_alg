@@ -38,16 +38,16 @@ public class GUI extends JFrame {
         title.setFont(new Font("Lucida Grande", Font.PLAIN, 20));
         display.add(title);
 
-        fileChooser.setText("graphs/Custom1/custom1.dot");
+        fileChooser.setText("graphs/Medium1/medium1.dot");
         display.add(fileChooser);
 
-        nameField.setText("Custom1");
+        nameField.setText("Medium1");
         display.add(nameField);
 
-        startField.setText("S");
+        startField.setText("0");
         display.add(startField);
 
-        targetField.setText("T");
+        targetField.setText("44");
         display.add(targetField);
 
         flowField.setText("4");

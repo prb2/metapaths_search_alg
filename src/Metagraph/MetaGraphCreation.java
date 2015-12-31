@@ -93,7 +93,7 @@ public class MetaGraphCreation {
         // As long as there are metanodes to explore, keep searching
         while (!explored.empty()) {
             MetaNode current = explored.pop();
-//            System.out.println("Popped from stack: " + current.getState());
+            System.out.println("Popped from stack: " + current.getState());
             if (current.isTarget(targetID, flow)) {
                 // Reached the target state, don't need to find neighbors of target
                 System.out.println("Current is target");
