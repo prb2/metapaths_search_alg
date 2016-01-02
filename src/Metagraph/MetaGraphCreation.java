@@ -1,16 +1,10 @@
 package Metagraph;
 
 import org.graphstream.graph.Edge;
-import org.graphstream.graph.ElementNotFoundException;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
-import scala.Int;
-import scala.util.parsing.combinator.testing.Str;
 
-import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Constructs a meta-graph in which nodes contain mappings of input graph nodes
