@@ -86,11 +86,17 @@
             \caption{IterativeFindMetaNbrs}
             \KwIn{$parent$: the metanode to find nbrs for}
             \KwOut{$G=(V,E)$: metagraph with any newly found metanodes added in}
+
+            \For{$n \in N$ \tcc{Iterate for each node involved in the metanode
+                    state}}{
+            }
+
             for each inner node n in N, for inner nbr m, move 0 to xi flow.
             For each move, attempt to move the remaining flow at n to the remaining
             inner nbrs m. Then repeat for each n in N. Check if any of the
             newly generated states are valid and add them to MG and stack
 
-
         \end{algorithm}
+
+
 \end{document}
