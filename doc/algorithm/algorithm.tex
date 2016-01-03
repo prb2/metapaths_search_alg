@@ -16,18 +16,113 @@
             v & the set of nodes in g \\
             e & the set of edges in g \\
             n & a node in v \\
+            s & the start node in v \\
+            t & the target node in v \\
+            f & the number of atoms to conserve (flow to move) \\
             G & the constructed metagraph \\
             V & the set of metanodes in G \\
             E & the set of metaedges in G \\
             N & a metanode in V of the form $\{n_i:x_i\}$ where $n_i \in v$ and
             $x_i$ is the number of atoms at $n_i$\\
-            \hline
+            \hline \\
         \end{tabular} \\
 
         Each $N \in V$ is composed of $i$ many nodes from $v$. A
         metanode takes the form $\{n_i:x_i\}$ where $n_i \in v$ and $x_i$ is
         the number of atoms at $n_i$. The $\sum_0^i x_i = k$ at any given $N$
-        ensuring that all atoms are accounted for at each metanode
+        ensuring that all atoms are accounted for at each metanode. \\
+
+        The terms \textit{state} and \textit{metanode} are used
+        interchangeably. Each metanode is simply a representation of
+        where flow is distributed. The state $\{s:f\}$ indicates that
+        there is $f$ amount of flow at node $s$. Similarly,
+        $\{a:3, b:2\}$ indicates that there are 3 atoms at node
+        $a$ and 2 atoms at node $b$.\\
+
+        The goal is to move all $f$ atoms (flow) from node $s$ to node $t$. In
+        other words, we seek a path from metanode $\{s:f\}$ to metanode
+        $\{t:f\}$ in the metagraph.
+
+        \newpage
+
+    \section{Overview}
+    \label{sec:Overview}
+
+        \begin{algorithm}
+            \caption{Metagraph Generation}
+            \KwIn{g, s, t, f}
+            \KwOut{G}
+
+            $S = \{s:f\}$ \tcc{Create the start state}
+            $V \gets V \cup S$ \tcc{Add start state to the metagraph}
+            $stack.push(S)$\;
+
+            \While{$|stack| \neq 0$}{
+                $current \gets stack.pop()$\;
+                $partials \gets$ initialize empty list\;
+
+                \For{each inner node, $n$, in $current$}{
+                    $innerPartials \gets$ list of all unique ways to move the
+                    flow residing at $n$\;
+                    $partials.append(innerPartials)$\;
+                }
+
+                $nbrs \gets$ all complete states, where each complete state is
+                formed by merging together one partial state from each list in
+                $partials$\;
+
+                \For{$nbr \in nbrs$}{
+                    \If{$nbr$ is valid and $nbr \notin deadset$}{
+                        $V \gets V \cup nbr$\;
+                        $E \gets E \cup (current, nbr)$\;
+                        $nbrCount \gets nbrCount + 1$\;
+                        $stack$.\textbf{push}($nbr$)\;
+                    }
+                }
+            }
+            \Return $G$\;
+        \end{algorithm}
+
+        % \textbf{Input:} g, s, t, f \\
+        % \textbf{Output:} G \\
+        % \begin{enumerate}
+            % \item{Create the start state: $S = \{s:f\}$}
+            % \item{Add start state to the metagraph: $V \gets V \cup S$}
+            % \item{Push $S$ on to stack: $stack.push(S)$}
+            % \item{while the stack is not empty:
+                % \begin{enumerate}
+                    % \item{$current \gets stack.pop()$}
+                    % \item{$partials \gets$ initialize empty list}
+                    % \item{for each inner node $n$ in $current$:
+                        % \begin{enumerate}
+                            % \item{$innerPartials \gets$ list of all unique ways to
+                                    % move the flow residing at $n$}
+                            % \item{$partials.append(innerPartials)$}
+                        % \end{enumerate}
+                    % }
+                % \item{$nbrs \gets$ all complete states, where each complete
+                        % state is formed by merging together one partial state
+                        % from each list in $partials$}
+                % \item{for each $nbr \in nbrs$}{
+                        % \begin{enumerate}
+                            % \item{
+                                % if $nbr$ is valid and $nbr \notin deadset$}
+                                % \begin{enumerate}
+                                    % \item{$V \gets V \cup nbr$}
+                                    % \item{$E \gets E \cup (current, nbr)$}
+                                    % \item{$nbrCount \gets nbrCount + 1$}
+                                    % \item{$stack$.\textbf{push}($nbr$)}
+                                % \end{enumerate}
+
+                        % \end{enumerate}
+                % }
+                % \end{enumerate}
+            % \item{Return $G$}
+            % }
+        % \end{enumerate}
+
+
+        \newpage
 
     \section{Algorithms}
     \label{sec:Algorithms}
@@ -84,17 +179,69 @@
 
         \begin{algorithm}
             \caption{IterativeFindMetaNbrs}
-            \KwIn{$parent$: the metanode to find nbrs for}
+            \KwIn{$current$: the metanode to find nbrs for, $G=(V,E)$: the
+                metagraph so far}
             \KwOut{$G=(V,E)$: metagraph with any newly found metanodes added in}
 
-            \For{$n \in N$ \tcc{Iterate for each node involved in the metanode
-                    state}}{
+            $partialStates \gets$ initialize new list\;
+            \For{$n \in N$}{
+                $partialStates$.\textbf{append}(\textbf{RecursiveNbrSearch}(n,
+                flow(n), nbrs(n)))\;
             }
 
-            for each inner node n in N, for inner nbr m, move 0 to xi flow.
-            For each move, attempt to move the remaining flow at n to the remaining
-            inner nbrs m. Then repeat for each n in N. Check if any of the
-            newly generated states are valid and add them to MG and stack
+            $metanbrs \gets$ \textbf{generateCompleteStates}($partialStates$)\;
+
+            \For{$nbr \in metanbrs$}{
+                \If{isValid(nbr) \textbf{and} $nbr \notin deadset$}{
+                    $V \gets V \cup nbr$\;
+                    $E \gets E \cup (current, nbr)$\;
+                    $nbrCount \gets nbrCount + 1$\;
+                    $stack$.\textbf{push}($nbr$)\;
+                }
+            }
+            \Return{G}
+
+        \end{algorithm}
+
+        \begin{algorithm}
+            \caption{RecursiveNbrSearch}
+            \KwIn{$n$: the node we're trying to move flow away from, $flow$:
+            the amount of flow residing at $n$ that needs to be moved, $nbrs$:
+        the unexplored neighbors of $n$}
+            \KwOut{$partialStates$: list of partial states (each state
+                represents a unique move of the flow at n to its nbrs)}
+
+            $states \gets$ initialize new list\;
+
+            \If{$|nbrs|$ > 1}{
+                $nbr \gets$ nbrs[0]\;
+                \For{$i = 0; i \leq min(flow, capacity(parent, nbr)); i++)$}{
+                    $partialState \gets$ initialize mapping of nodes (string)
+                    to flow (number)\;
+
+                    \If{$i \neq 0$}{
+                        partialState.put(nbr, i);
+                    }
+
+                    $remaining \gets$ recursiveNbrSearch(n, flow-i, nbrs-nbr)
+
+                    \For{$state \in remaining$}{
+                        states.add(mergePartialStates(parialState, state))
+                    }
+                }
+            }
+            \If{$|nbrs| = 0$ \textbf{and} flow > 0 \textbf{and} current = target}{
+                \tcc{If there is flow remaining, but the current node is the
+                target node, the flow can remain stationary}
+                state.put(current, flow);
+                states.add(state);
+            }
+            \Else{
+                \tcc{If there are no more nbrs and flow remains, no more valid
+                    states can be added, so return}
+            }
+
+            \Return{states}
 
         \end{algorithm}
 
