@@ -89,6 +89,7 @@ public class MetaGraphDepreciated {
     }
 
     public void writeToFile(String filename) throws IOException {
+
         FileSink fs = new FileSinkDOT();
         fs.writeAll(internal, "graphs/" + filename + ".dot");
     }

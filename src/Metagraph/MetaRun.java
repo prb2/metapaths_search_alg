@@ -1,6 +1,6 @@
 package Metagraph;
 
-import GUI.GUI;
+//import GUI.GUI;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Path;
@@ -32,43 +32,47 @@ public class MetaRun {
             e.setAttribute("ui.label", e.getAttribute("capacity").toString());
         }
 
-        run(g, start, target, flow, g.getId(), true);
+//        run(g, start, target, flow, g.getId(), true);
+        MetaGraph mg = new MetaGraph(g, input, start, target, flow);
+        mg.populate(false, false);
+        mg.writeToFile("newwww");
     }
 
-    public static void run(Graph g, String start, String target, int desiredFlow, String graphName, boolean pruning) {
-        MetaGraphCreation mgs = new MetaGraphCreation();
-        mgs.constructMetaGraph(g, start, target, desiredFlow, pruning);
-        MetaGraph mg = mgs.getMeta();
+//    public static void run(Graph g, String start, String target, int desiredFlow, String graphName, boolean pruning) {
+//        MetaGraphCreation mgs = new MetaGraphCreation();
+//        mgs.constructMetaGraph(g, start, target, desiredFlow, pruning);
+//        MetaGraph mg = mgs.getMeta();
+//
+//        try {
+//            writeGraph(mg.getInternal(), graphName + "/MG_" + graphName + "_Pruned.dot");
+//            System.out.println("Done writing MG to file.");
+//        } catch (IOException e) {
+//            System.out.println(e);
+//        }
+//
+//        /*
+//        // Search the MG for paths
+//        MetaGraphPathSearch search = new MetaGraphPathSearch();
+//        Iterable<Path> paths = search.findPaths(mg, mg.getStartID(), mg.getTargetID());
+//        if (paths.iterator().hasNext()) {
+//            for (Path path : paths) {
+//                System.out.println("Found path: " + path.toString());
+//            }
+//            Graph union = search.unionize(paths);
+////            union.display(true);
+//
+//            try {
+//                writeGraph(union, graphName + "/Union_" + graphName + "_Pruned.dot");
+//            } catch (IOException e) {
+//                System.out.println(e);
+//            }
+//        }
+//        */
+//    }
 
-        try {
-            writeGraph(mg.getInternal(), graphName + "/MG_" + graphName + "_Pruned.dot");
-            System.out.println("Done writing MG to file.");
-        } catch (IOException e) {
-            System.out.println(e);
-        }
+//    public static void writeGraph(Graph g, String name) throws IOException {
+//        FileSink fs = new FileSinkDOT();
+//        fs.writeAll(g, "graphs/" + name);
+//    }
 
-        /*
-        // Search the MG for paths
-        MetaGraphPathSearch search = new MetaGraphPathSearch();
-        Iterable<Path> paths = search.findPaths(mg, mg.getStartID(), mg.getTargetID());
-        if (paths.iterator().hasNext()) {
-            for (Path path : paths) {
-                System.out.println("Found path: " + path.toString());
-            }
-            Graph union = search.unionize(paths);
-//            union.display(true);
-
-            try {
-                writeGraph(union, graphName + "/Union_" + graphName + "_Pruned.dot");
-            } catch (IOException e) {
-                System.out.println(e);
-            }
-        }
-        */
-    }
-
-    public static void writeGraph(Graph g, String name) throws IOException {
-        FileSink fs = new FileSinkDOT();
-        fs.writeAll(g, "graphs/" + name);
-    }
 }
