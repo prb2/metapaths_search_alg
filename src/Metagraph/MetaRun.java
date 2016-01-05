@@ -42,11 +42,12 @@ public class MetaRun {
 
         try {
             writeGraph(mg.getInternal(), graphName + "/MG_" + graphName + "_Pruned.dot");
-
+            System.out.println("Done writing MG to file.");
         } catch (IOException e) {
             System.out.println(e);
         }
 
+        /*
         // Search the MG for paths
         MetaGraphPathSearch search = new MetaGraphPathSearch();
         Iterable<Path> paths = search.findPaths(mg, mg.getStartID(), mg.getTargetID());
@@ -63,6 +64,7 @@ public class MetaRun {
                 System.out.println(e);
             }
         }
+        */
     }
 
     public static void writeGraph(Graph g, String name) throws IOException {

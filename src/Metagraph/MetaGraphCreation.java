@@ -87,11 +87,13 @@ public class MetaGraphCreation {
         // As long as there are metanodes to explore, keep searching
         while (!explored.empty()) {
             MetaNode current = explored.pop();
-            System.out.println("Popped from stack: " + current.getState());
+//            System.out.println("Popped from stack: " + current.getState());
             if (current.isTarget(targetID, flow)) {
                 // Reached the target state, don't need to find neighbors of target
                 System.out.println("Current is target");
                 // Will continue to explore metanodes left on the stack
+
+                break; // stop exploring after target is first found
             } else {
 //                System.out.println("Finding new meta nbr for: " + current.getState().toString());
                 // Find all neighbors of this meta node, then continue explores metanodes from the stack
@@ -230,6 +232,7 @@ public class MetaGraphCreation {
                 ArrayList<HashMap<String, Double>> foundStates = recursiveNbrSearch(n - i, parent, nbrs, j - 1);
 //                System.out.println("Found rec. partial states: " + foundStates);
 
+                // Check if flow was distributed to any of the other nbrs
                 if (foundStates.size() == 0) {
                     states.add(partialState);
                 } else {

@@ -146,7 +146,7 @@ public class MetaGraph {
      * @param terminus The terminal node to start pruning from
      */
     public void prune(MetaNode terminus) {
-        System.out.println("Received node for pruning: " + terminus.getId());
+//        System.out.println("Received node for pruning: " + terminus.getId());
         HashMap<String, Double> endState = terminus.getState();
         Node endNode = internal.getNode(endState.toString());
         // Find the terminal node's parents
