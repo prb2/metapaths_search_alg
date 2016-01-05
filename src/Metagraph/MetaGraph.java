@@ -1,175 +1,117 @@
 package Metagraph;
 
-import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
-import org.graphstream.stream.file.FileSink;
-import org.graphstream.stream.file.FileSinkDOT;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.Stack;
 
 /**
- * Created by prudhvi on 10/16/15.
+ * Representation of the MetaGraph
  */
 public class MetaGraph {
+    /* Input graph of metabolic reations */
+    private Graph input;
+    /* The internal representation of the metagraph */
+    private Graph meta;
+
+    /* Flow/number of atoms to conserve */
+    private int flow;
+
+    /* Create the start and target states */
+    private HashMap<String, Integer> startState = new HashMap<>();
+    private HashMap<String, Integer> targetState = new HashMap<>();
+
     /**
-     * Maps each meta-node to its state
-     * {meta-node : {node1:count1, node2:count2}}
+     * Initialize the metagraph with the start state
+     * @param inputGraph The input graph of metabolic reactions
+     * @param name The name of metagraph (becomes filename when written)
+     * @param startNode Start node from input graph
+     * @param targetNode Target node from input graph
+     * @param inputFlow The flow to move (number of atoms to conserve)
      */
-    Map<String, Map<String, Double>> stateMap;
-    Map<String, MetaNode> metaNodes;
+    public void MetaGraph(Graph inputGraph, String name, String startNode,
+                          String targetNode, int inputFlow) {
+        // Store the input graph and needed flow
+        input = inputGraph;
+        flow = inputFlow;
 
-    /* The collection of nodes which have been pruned from the graph */
-    HashMap<MetaNode, ArrayList<MetaNode>> deadset = new HashMap<>(); // Maps the pruned node to a list of its parents
+        // Create the empty metagraph
+        meta = new SingleGraph(name);
 
-    public Graph getInternal() {
-        return internal;
-    }
+        // Create the start and target states, where all flow is in one node
+        startState.put(startNode, flow);
+        targetState.put(targetNode, flow);
 
-    private Graph internal;
+        // Place the first node into the metagraph
+        meta.addNode(startState.toString());
 
-    private String startID;
+        // Store the state flow as an attribute of the metanode
+        meta.getNode(startState.toString()).setAttribute("state",
+                startState);
 
-    private String targetID;
-
-    public double getFlow() {
-        return flow;
-    }
-
-    private double flow;
-
-    protected MetaGraph(String id, double desiredFlow) {
-        internal = new SingleGraph(id);
-        flow = desiredFlow;
-        stateMap = new HashMap<>();
-        metaNodes = new HashMap<>();
-    }
-
-    public Boolean addMetaNode(MetaNode metanode) {
-        if (metanode.isValid(flow)) {
-            internal.addNode(metanode.getId());
-            Node node = internal.getNode(metanode.getId());
-            node.setAttribute("state", metanode.getState().toString());
-            metaNodes.put(metanode.getId(), metanode);
-            stateMap.put(metanode.getId(), metanode.getState());
-//            System.out.println("Added new meta nbr to MG with ID: " + metanode.getId() + " and value: " + metanode.getState());
-            return true;
-        } else {
-            System.out.println("State was not valid. Node was not added to meta-graph.");
-            return false;
-        }
-    }
-
-    public Boolean hasNode(String nodeID) {
-        return metaNodes.containsKey(nodeID);
-    }
-
-    public void addDirectedMetaEdge(String from, String to) {
-        if (internal.getEdge(from + "->" + to) == null) {
-            internal.addEdge(from + "->" + to, from, to, true);
-        }
-    }
-
-    // whether this state is already a node in the meta graph
-    public Boolean contains(HashMap<String, Double> state) {
-        return stateMap.containsValue(state);
-    }
-
-    public void display() {
-        for (Node n : internal) {
-            n.setAttribute("ui.label", stateMap.get(n.getId()));
-        }
-        //TODO: Uncomment to display meta graph
-        System.out.println(stateMap);
-        internal.display();
-    }
-
-    public void writeToFile(String filename) throws IOException {
-        FileSink fs = new FileSinkDOT();
-        fs.writeAll(internal, "graphs/" + filename + ".dot");
-    }
-
-    public MetaNode getMetaNode(String metaNodeID) {
-//        return new MetaNode(metaNodeID, stateMap.get(metaNodeID));
-        return metaNodes.get(metaNodeID);
-    }
-
-    public boolean hasState(Map<String, Double> newState) {
-        return stateMap.containsValue(newState);
-    }
-
-    public void setStartID(String startID) {
-        this.startID = startID;
-    }
-
-    public void setTargetID(String targetID) {
-        this.targetID = targetID;
-    }
-
-    public String getStartID() {
-        return startID;
-    }
-
-    public String getTargetID() {
-        return targetID;
-    }
-
-    public boolean inDeadset(MetaNode node) {
-//        System.out.println("Checking if node: " + node);
-//        System.out.println("Is in the deadset: ");
-//        printDeadset();
-        for (MetaNode deadNode : deadset.keySet()) {
-            if (node.isSameAs(deadNode)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public HashMap<MetaNode, ArrayList<MetaNode>> getDeadset() {
-        return deadset;
-    }
-
-    public void printDeadset() {
-        System.out.println("Deadset: ");
-        for (MetaNode key : deadset.keySet()) {
-            System.out.println("\t " + key);
-        }
+        // Create a self edge on the target node (allows flow to remain stationary at the target)
+        input.addEdge("TargetSelf", targetNode, targetNode, true);
+        input.getEdge("TargetSelf").setAttribute("capacity", Double.MAX_VALUE);
     }
 
     /**
-     * Prunes the metagraph to remove terminal branches
-     * @param terminus The terminal node to start pruning from
+     * Fills the metagraph with metanodes by searching for neighbors
+     * of existing metanodes, initially only the start metanode
+     * @param stopOnTarget If TRUE, search will stop as soon as target state is found
      */
-    public void prune(MetaNode terminus) {
-//        System.out.println("Received node for pruning: " + terminus.getId());
-        HashMap<String, Double> endState = terminus.getState();
-        Node endNode = internal.getNode(endState.toString());
-        // Find the terminal node's parents
-        ArrayList<MetaNode> parents = new ArrayList<>();
-        for (Edge edge : endNode.getEachEnteringEdge()) {
-            Node parent = edge.getSourceNode();
-            parents.add(getMetaNode(parent.getId()));
-        }
-        // Add this node to the dead set
-        deadset.put(terminus, parents);
+    public void populate(boolean stopOnTarget, boolean enablePruning) {
+        /* The stack of nodes that need to be explored for neighbors */
+        Stack<Node> known = new Stack<>();
 
-        // Remove it from the MG
-        internal.removeNode(endNode);
-        metaNodes.remove(endNode.getId());
+        // Push the start node onto the known stack
+        known.push(meta.getNode(startState.toString()));
 
-        // Check if any of its parents can be pruned
-        for (MetaNode parent : parents) {
-            Node node = internal.getNode(parent.getState().toString());
-            if (node.getLeavingEdgeSet().size() == 0) {
-                // if the parent has no children, it is also a dead end and can be pruned
-                prune(parent);
+        // Continue until there are no more nodes to search
+        while (!known.empty()) {
+            // Metanode to explore on this iteration
+            Node current = known.pop();
+
+            ArrayList<HashMap<String, Integer>> nbrStates = findNbrs(current);
+
+            if (enablePruning && nbrStates.size() == 0 && !isTarget(current)) {
+                // If pruning is enabled, no nbrs were found, and current is
+                // not the target, prune the current metanode from the graph
+                prune(current);
+            } else {
+                // If metanbrs were found, add them to the metagraph
+                for (HashMap<String, Integer> state : nbrStates) {
+                    // Add the neighboring node and store the state
+                    meta.addNode(state.toString());
+                    Node nbr = meta.getNode(state.toString());
+                    nbr.setAttribute("state", state);
+
+                    // Add a directed edge from current to nbr
+                    meta.addEdge(current.toString() + " -> " + nbr.toString(),
+                            current, nbr, true);
+
+                    if (stopOnTarget && isTarget(nbr)) {
+                        // Stop neighbor search since target was found
+                        break;
+                    }
+                }
+
             }
+
         }
     }
 
+
+    /**
+     * Tests whether the input metanode is the target metanode
+     * @param node The metanode to test
+     * @return Whether the node is in fact the target
+     */
+    private boolean isTarget(Node node) {
+        String state = node.getAttribute("state");
+        String target = targetState.toString();
+        return state.equals(target);
+    }
 }
