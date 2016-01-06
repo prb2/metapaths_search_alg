@@ -37,9 +37,9 @@ After compiling the project, there are two ways to generate a metagraph:
 1. Run the `Controller.java` file and use the GUI
 2. Run the `MetaRun.java` file with the following arguments:
 
-    ```java MetaRun input_file start_node target_node desired_flow stop_on_target enable_pruning```
+    java MetaRun input_file start_node target_node desired_flow stop_on_target enable_pruning
 
-    * input_file - filepath to the input graph, must be in `.dot` format
+    * input_file - filepath to the input graph, must be in the `.dot` format
     * start_node - ID of the start node in the input graph
     * target_node - ID of the target node in the input graph
     * desired_flow - integer, amount of flow to move
@@ -47,3 +47,9 @@ After compiling the project, there are two ways to generate a metagraph:
     * otherwise will continue searching until exhausted
     * enable_pruning - "true" will cause terminal nodes to be pruned (recommended)
 
+### Dependencies
+This project relies on the GraphStream library for Java and is used under the LGPL license.
+
+[Website](http://graphstream-project.org)
+
+[GitHub](https://github.com/graphstream)
