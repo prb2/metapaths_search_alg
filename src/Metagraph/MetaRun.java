@@ -16,7 +16,6 @@ import java.io.IOException;
  */
 public class MetaRun {
     public static void main(String args[]) throws IOException {
-        System.out.println("Args: " + args[0]);
         // Parse the arguments
         String input = args[0];
         String start = args[1];
@@ -36,28 +35,30 @@ public class MetaRun {
             e.setAttribute("ui.label", e.getAttribute("capacity").toString());
         }
 
-        // Create the initial metagraph with the start state
-        MetaGraph mg = new MetaGraph(g, input, start, target, flow);
-        // Populate the metagraph via neighbor search
-        mg.populate(stopOnTarget, enablePruning);
-        // Write the generated metagraph to file
-        mg.writeToFile(input + "/Meta_" + input);
+        run(g, input, start, target, flow, stopOnTarget, enablePruning);
     }
 
     public static void run(Graph g, String graphName, String start, String target,
                            int desiredFlow,  boolean stopOnTarget, boolean enablePruning) {
 
+        System.out.println("Run Characteristics:");
+        System.out.println("\t " + graphName);
+        System.out.println("\t " + start + " --" + desiredFlow + "--> " + target);
+        System.out.println("\t Stop on target: " + stopOnTarget + " Pruning: " + enablePruning);
+
         // Create the initial metagraph with the start state
         MetaGraph mg = new MetaGraph(g, graphName, start, target, desiredFlow);
 
         // Populate the metagraph via neighbor search
-        mg.populate(stopOnTarget, enablePruning);
+        mg.populate(stopOnTarget, enablePruning, true);
 
         try {
             mg.writeToFile(graphName + "/Meta_" + graphName);
-            System.out.println("Done writing MG to file.");
+            System.out.println("\t Done writing MG to file.");
         } catch (IOException e) {
             System.out.println(e);
         }
+
+        System.out.println("");
     }
 }

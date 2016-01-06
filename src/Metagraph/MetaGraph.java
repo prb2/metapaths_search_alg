@@ -9,6 +9,8 @@ import org.graphstream.stream.file.FileSinkDOT;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Creation and representation of the MetaGraph
@@ -125,6 +127,13 @@ public class MetaGraph {
                 }
             }
         }
+    }
+
+    public void populate(boolean stopOnTarget, boolean enablePruning, boolean timed) {
+        long startTime = System.nanoTime();
+        populate(stopOnTarget, enablePruning);
+        long elapsed = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime);
+        System.out.println("\t Metagraph population took: " + elapsed + " milliseconds.");
     }
 
     /**
