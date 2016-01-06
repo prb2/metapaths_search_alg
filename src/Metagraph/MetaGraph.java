@@ -49,6 +49,7 @@ public class MetaGraph {
         // Create the empty metagraph
         meta = new SingleGraph(name, false, false);
 
+        // Initialize the set of found metanodes
         visited = new HashSet<>();
 
         // Create the start and target states, where all flow is in one node
@@ -87,6 +88,7 @@ public class MetaGraph {
             // Metanode to explore on this iteration
             Node current = known.pop();
 
+            // Get all the states that are reachable (one move away) from the current state
             ArrayList<HashMap<String, Double>> nbrStates = findNbrs(current);
 
             if (enablePruning && nbrStates.size() == 0 && !isTarget(current)) {
@@ -96,6 +98,8 @@ public class MetaGraph {
             } else {
                 // If metanbrs were found, add them to the metagraph
                 for (HashMap<String, Double> state : nbrStates) {
+                    // TODO: Should this validity check exist? It seems better
+                    // TODO: to have only valid states be returned by findNbrs
                     if (isValid(state)) {
                         // Add the neighboring node and store the state
                         meta.addNode(state.toString());
@@ -111,18 +115,18 @@ public class MetaGraph {
                             break;
                         } else {
                             if (!visited.contains(nbr)) {
+                                // If nbr hasn't been seen, push it onto the stack for exploration
                                 known.push(nbr);
                                 visited.add(nbr);
                             }
                         }
                     }
                 }
-
             }
-
         }
     }
 
+    // TODO: Try and get rid of the need for this
     private boolean isValid(HashMap<String, Double> state) {
         double total = 0;
         for (double val : state.values()) {
@@ -164,7 +168,6 @@ public class MetaGraph {
             // Index variable for iterating through innerNbrs
             int j = innerNbrs.size() - 1;
 
-            // 2. Merge each possible combination of partial states to create complete states
             if (j >= 0) {
                 // Get all the partial states resulting from moving the flow at this inner 'node'
                 partialStates.put(node.getId(), recursiveNbrSearch(requiredFlow, node, innerNbrs, j));
@@ -172,7 +175,7 @@ public class MetaGraph {
                 continue;
             }
         }
-        // Combine the found partials into all combinations of valid flow moves
+        // Combine the found partials into all combinations of valid flow moves from this current state
         return generateCompleteStates(partialStates);
     }
 
@@ -223,20 +226,25 @@ public class MetaGraph {
     }
 
     /**
-     *
+     * This function recursively distributes the flow residing at the parent node.
      * @param n The amount of flow that needs to be distributed
+     * @param parent The node from input graph which is the source of flow
+     * @param nbrs Neighbors of parent, that must receive remaining flow
      * @param j The jth nbr to move flow to
-     * @return A partial state
+     * @return A list of partial states, each of which maps the jth nbr of parent
+     *         to the various amounts of flow that it can be moved to that nbr
      */
     private ArrayList<HashMap<String, Double>> recursiveNbrSearch(double n, Node parent, ArrayList<Node> nbrs, int j) {
-//        System.out.println("Rec. nbr. search with: n=" + n + " parent=" + parent + " nbrs=" + nbrs + " j=" + j);
-
+        /* List of all possible flow moves from parent to the jth nbr */
         ArrayList<HashMap<String, Double>> states = new ArrayList<>();
+
+        // If there are no more nbrs left
         if (j < 0) {
             HashMap<String, Double> state = new HashMap<>();
-            if (n >= 0.0 && parent.getId() == targetID)
+            if (n >= 0.0 && parent.getId() == targetID) {
                 // if there is excess flow and we're at the target, we can leave it there
                 state.put(parent.getId(), n);
+            }
             states.add(state);
         } else {
             // 1. for each inner node in current's state, generate the possible partial states
