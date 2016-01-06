@@ -17,11 +17,15 @@ import java.io.IOException;
 public class MetaRun {
     public static void main(String args[]) throws IOException {
         System.out.println("Args: " + args[0]);
+        // Parse the arguments
         String input = args[0];
         String start = args[1];
         String target = args[2];
         int flow = Integer.parseInt(args[3]);
+        boolean stopOnTarget = Boolean.getBoolean(args[4]);
+        boolean enablePruning = Boolean.getBoolean(args[5]);
 
+        // Read in the input graph
         Graph g = new SingleGraph(input);
         FileSourceDOT fs = new FileSourceDOT();
         fs.addSink(g);
@@ -32,47 +36,28 @@ public class MetaRun {
             e.setAttribute("ui.label", e.getAttribute("capacity").toString());
         }
 
-//        run(g, start, target, flow, g.getId(), true);
+        // Create the initial metagraph with the start state
         MetaGraph mg = new MetaGraph(g, input, start, target, flow);
-        mg.populate(false, true);
-        mg.writeToFile("new");
+        // Populate the metagraph via neighbor search
+        mg.populate(stopOnTarget, enablePruning);
+        // Write the generated metagraph to file
+        mg.writeToFile(input + "/Meta_" + input);
     }
 
-//    public static void run(Graph g, String start, String target, int desiredFlow, String graphName, boolean pruning) {
-//        MetaGraphCreation mgs = new MetaGraphCreation();
-//        mgs.constructMetaGraph(g, start, target, desiredFlow, pruning);
-//        MetaGraph mg = mgs.getMeta();
-//
-//        try {
-//            writeGraph(mg.getInternal(), graphName + "/MG_" + graphName + "_Pruned.dot");
-//            System.out.println("Done writing MG to file.");
-//        } catch (IOException e) {
-//            System.out.println(e);
-//        }
-//
-//        /*
-//        // Search the MG for paths
-//        MetaGraphPathSearch search = new MetaGraphPathSearch();
-//        Iterable<Path> paths = search.findPaths(mg, mg.getStartID(), mg.getTargetID());
-//        if (paths.iterator().hasNext()) {
-//            for (Path path : paths) {
-//                System.out.println("Found path: " + path.toString());
-//            }
-//            Graph union = search.unionize(paths);
-////            union.display(true);
-//
-//            try {
-//                writeGraph(union, graphName + "/Union_" + graphName + "_Pruned.dot");
-//            } catch (IOException e) {
-//                System.out.println(e);
-//            }
-//        }
-//        */
-//    }
+    public static void run(Graph g, String graphName, String start, String target,
+                           int desiredFlow,  boolean stopOnTarget, boolean enablePruning) {
 
-//    public static void writeGraph(Graph g, String name) throws IOException {
-//        FileSink fs = new FileSinkDOT();
-//        fs.writeAll(g, "graphs/" + name);
-//    }
+        // Create the initial metagraph with the start state
+        MetaGraph mg = new MetaGraph(g, graphName, start, target, desiredFlow);
 
+        // Populate the metagraph via neighbor search
+        mg.populate(stopOnTarget, enablePruning);
+
+        try {
+            mg.writeToFile(graphName + "/Meta_" + graphName);
+            System.out.println("Done writing MG to file.");
+        } catch (IOException e) {
+            System.out.println(e);
+        }
+    }
 }
