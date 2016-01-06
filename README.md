@@ -46,7 +46,7 @@ After compiling the project, there are two ways to generate a metagraph:
 * target_node - ID of the target node in the input graph
 * desired_flow - integer, amount of flow to move
 * stop_on_target - "true" will stop as soon as the target metanode is found,
-* otherwise will continue searching until exhausted
+  otherwise will continue searching until exhausted
 * enable_pruning - "true" will cause terminal nodes to be pruned (recommended)
 
 ### Dependencies
