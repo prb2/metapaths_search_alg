@@ -34,7 +34,7 @@ public class MetaRun {
 
 //        run(g, start, target, flow, g.getId(), true);
         MetaGraph mg = new MetaGraph(g, input, start, target, flow);
-        mg.populate(false, false);
+        mg.populate(false, true);
         mg.writeToFile("newwww1");
     }
 

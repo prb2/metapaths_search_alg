@@ -31,6 +31,10 @@ public class MetaGraph {
     /* Set of visited metanodes that don't need to be explored */
     private Set<Node> visited;
 
+    /* The collection of nodes which have been pruned from the graph,
+    mapped to the parents of that node */
+    private HashMap<Node, ArrayList<Node>> pruned;
+
 
     /**
      * Initialize the metagraph with the start state
@@ -51,6 +55,9 @@ public class MetaGraph {
 
         // Initialize the set of found metanodes
         visited = new HashSet<>();
+
+        // Initialize the empty collection of pruned nodes
+        pruned = new HashMap<>();
 
         // Create the start and target states, where all flow is in one node
         startState.put(startNode, flow);
@@ -333,7 +340,26 @@ public class MetaGraph {
      * @param terminus The terminal node that was found
      */
     private void prune(Node terminus) {
-        // TODO: Implement
+        HashMap<String, Double> endState = terminus.getAttribute("state");
+
+        // Find the terminal node's parents
+        ArrayList<Node> parents = new ArrayList<>();
+        for (Edge edge : terminus.getEachEnteringEdge()) {
+            parents.add(edge.getSourceNode());
+        }
+        // Add this node to the pruned set
+        pruned.put(terminus, parents);
+
+        // Remove it from the MG
+        meta.removeNode(terminus);
+
+        // Check if any of its parents can be pruned
+        for (Node parent : parents) {
+            if (parent.getLeavingEdgeSet().size() == 0) {
+                // If the parent has no children, it is also a dead end and can be pruned
+                prune(parent);
+            }
+        }
     }
 
     /********** Utilities **********/
@@ -375,7 +401,7 @@ public class MetaGraph {
      * @return Whether the node is in fact the target
      */
     private boolean isTarget(Node node) {
-        String state = node.getAttribute("state");
+        String state = node.getAttribute("state").toString();
         String target = targetState.toString();
         return state.equals(target);
     }
