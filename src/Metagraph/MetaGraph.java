@@ -238,15 +238,8 @@ public class MetaGraph {
         /* List of all possible flow moves from parent to the jth nbr */
         ArrayList<HashMap<String, Double>> states = new ArrayList<>();
 
-        // If there are no more nbrs left
-        if (j < 0) {
-            HashMap<String, Double> state = new HashMap<>();
-            if (n >= 0.0 && parent.getId() == targetID) {
-                // if there is excess flow and we're at the target, we can leave it there
-                state.put(parent.getId(), n);
-            }
-            states.add(state);
-        } else {
+        // If there are nbrs left
+        if (j >= 0) {
             // 1. for each inner node in current's state, generate the possible partial states
             Node nbr = nbrs.get(j);
             for (double i = 0; i <= Math.min(n, capacity(parent, nbr)); i++) {
