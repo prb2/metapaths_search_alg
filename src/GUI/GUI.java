@@ -6,10 +6,7 @@ import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.stream.file.FileSourceDOT;
 
 import javax.swing.*;
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 
 public class GUI extends JFrame {
@@ -29,7 +26,7 @@ public class GUI extends JFrame {
         initGUI();
     }
     private void initGUI() {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(300, 500);
 
         Container display = getContentPane();
@@ -62,36 +59,26 @@ public class GUI extends JFrame {
         display.add(targetStopCheck);
 
         display.add(searchBtn);
-        searchBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                MetaRun runner = new MetaRun();
+        searchBtn.addActionListener(e -> {
+            // Load the input graph
+            Graph g = new SingleGraph(nameField.getText());
+            FileSourceDOT fs = new FileSourceDOT();
+            fs.addSink(g);
 
-                // Load the input graph
-                Graph g = new SingleGraph(nameField.getText());
-                FileSourceDOT fs = new FileSourceDOT();
-                fs.addSink(g);
-
-                try {
-                    fs.readAll(fileChooser.getText());
-                }  catch (IOException x) {
-                    System.out.println(x);
-                }
-
-                // Create the metagraph and write to file
-                runner.run(g, g.getId(), startField.getText(), targetField.getText(),
-                        Integer.parseInt(flowField.getText()), targetStopCheck.isSelected(),
-                        pruningCheck.isSelected());
+            try {
+                fs.readAll(fileChooser.getText());
+            }  catch (IOException x) {
+                System.out.println("IOException when attempting to read input graph.");
             }
+
+            // Create the metagraph and write to file
+            MetaRun.run(g, g.getId(), startField.getText(), targetField.getText(),
+                    Integer.parseInt(flowField.getText()), targetStopCheck.isSelected(),
+                    pruningCheck.isSelected());
         });
 
         display.add(quitBtn);
-        quitBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-            }
-        });
+        quitBtn.addActionListener(e -> dispose());
     }
 
     public void start(){

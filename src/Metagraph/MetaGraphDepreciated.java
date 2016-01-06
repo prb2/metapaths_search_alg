@@ -21,10 +21,10 @@ public class MetaGraphDepreciated {
      * {meta-node : {node1:count1, node2:count2}}
      */
     Map<String, Map<String, Double>> stateMap;
-    Map<String, MetaNode> metaNodes;
+    Map<String, MetaNodeDepreciated> metaNodes;
 
     /* The collection of nodes which have been pruned from the graph */
-    HashMap<MetaNode, ArrayList<MetaNode>> deadset = new HashMap<>(); // Maps the pruned node to a list of its parents
+    HashMap<MetaNodeDepreciated, ArrayList<MetaNodeDepreciated>> deadset = new HashMap<>(); // Maps the pruned node to a list of its parents
 
     public Graph getInternal() {
         return internal;
@@ -49,7 +49,7 @@ public class MetaGraphDepreciated {
         metaNodes = new HashMap<>();
     }
 
-    public Boolean addMetaNode(MetaNode metanode) {
+    public Boolean addMetaNode(MetaNodeDepreciated metanode) {
         if (metanode.isValid(flow)) {
             internal.addNode(metanode.getId());
             Node node = internal.getNode(metanode.getId());
@@ -94,8 +94,8 @@ public class MetaGraphDepreciated {
         fs.writeAll(internal, "graphs/" + filename + ".dot");
     }
 
-    public MetaNode getMetaNode(String metaNodeID) {
-//        return new MetaNode(metaNodeID, stateMap.get(metaNodeID));
+    public MetaNodeDepreciated getMetaNode(String metaNodeID) {
+//        return new MetaNodeDepreciated(metaNodeID, stateMap.get(metaNodeID));
         return metaNodes.get(metaNodeID);
     }
 
@@ -119,11 +119,11 @@ public class MetaGraphDepreciated {
         return targetID;
     }
 
-    public boolean inDeadset(MetaNode node) {
+    public boolean inDeadset(MetaNodeDepreciated node) {
 //        System.out.println("Checking if node: " + node);
 //        System.out.println("Is in the deadset: ");
 //        printDeadset();
-        for (MetaNode deadNode : deadset.keySet()) {
+        for (MetaNodeDepreciated deadNode : deadset.keySet()) {
             if (node.isSameAs(deadNode)) {
                 return true;
             }
@@ -131,13 +131,13 @@ public class MetaGraphDepreciated {
         return false;
     }
 
-    public HashMap<MetaNode, ArrayList<MetaNode>> getDeadset() {
+    public HashMap<MetaNodeDepreciated, ArrayList<MetaNodeDepreciated>> getDeadset() {
         return deadset;
     }
 
     public void printDeadset() {
         System.out.println("Deadset: ");
-        for (MetaNode key : deadset.keySet()) {
+        for (MetaNodeDepreciated key : deadset.keySet()) {
             System.out.println("\t " + key);
         }
     }
@@ -146,12 +146,12 @@ public class MetaGraphDepreciated {
      * Prunes the metagraph to remove terminal branches
      * @param terminus The terminal node to start pruning from
      */
-    public void prune(MetaNode terminus) {
+    public void prune(MetaNodeDepreciated terminus) {
 //        System.out.println("Received node for pruning: " + terminus.getId());
         HashMap<String, Double> endState = terminus.getState();
         Node endNode = internal.getNode(endState.toString());
         // Find the terminal node's parents
-        ArrayList<MetaNode> parents = new ArrayList<>();
+        ArrayList<MetaNodeDepreciated> parents = new ArrayList<>();
         for (Edge edge : endNode.getEachEnteringEdge()) {
             Node parent = edge.getSourceNode();
             parents.add(getMetaNode(parent.getId()));
@@ -164,7 +164,7 @@ public class MetaGraphDepreciated {
         metaNodes.remove(endNode.getId());
 
         // Check if any of its parents can be pruned
-        for (MetaNode parent : parents) {
+        for (MetaNodeDepreciated parent : parents) {
             Node node = internal.getNode(parent.getState().toString());
             if (node.getLeavingEdgeSet().size() == 0) {
                 // if the parent has no children, it is also a dead end and can be pruned

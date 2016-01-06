@@ -1,21 +1,16 @@
 package Metagraph;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import org.graphstream.graph.Node;
-
-import javax.swing.text.StyledEditorKit;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Wrapper for nodes in a MetaGraph
  */
-public class MetaNode {
+public class MetaNodeDepreciated {
     private String id;
     private HashMap<String, Double> state;
 
-    public MetaNode(String name, HashMap<String, Double> counts) {
+    public MetaNodeDepreciated(String name, HashMap<String, Double> counts) {
         id = name;
         state = counts;
     }
@@ -47,7 +42,7 @@ public class MetaNode {
         return false;
     }
 
-    public Boolean isSameAs(MetaNode other) {
+    public Boolean isSameAs(MetaNodeDepreciated other) {
         return toString().equals(other.toString());
     }
 

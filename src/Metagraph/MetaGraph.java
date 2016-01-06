@@ -25,8 +25,6 @@ public class MetaGraph {
     /* Create the start and target states */
     private HashMap<String, Double> startState = new HashMap<>();
     private HashMap<String, Double> targetState = new HashMap<>();
-    private String startID;
-    private String targetID;
 
     /* Set of visited metanodes that don't need to be explored */
     private Set<Node> visited;
@@ -62,8 +60,6 @@ public class MetaGraph {
         // Create the start and target states, where all flow is in one node
         startState.put(startNode, flow);
         targetState.put(targetNode, flow);
-        startID = startNode;
-        targetID = targetNode;
 
         // Place the first node into the metagraph
         meta.addNode(startState.toString());
@@ -171,7 +167,7 @@ public class MetaGraph {
             double requiredFlow = currentState.get(node.getId());
 
             // Get list of nodes that we could move flow to
-            ArrayList<Node> innerNbrs = getOutgoingNbrs(input, node);
+            ArrayList<Node> innerNbrs = getOutgoingNbrs(node);
 
             // Index variable for iterating through innerNbrs
             int j = innerNbrs.size() - 1;
@@ -179,8 +175,6 @@ public class MetaGraph {
             if (j >= 0) {
                 // Get all the partial states resulting from moving the flow at this inner 'node'
                 partialStates.put(node.getId(), recursiveNbrSearch(requiredFlow, node, innerNbrs, j));
-            } else {
-                continue;
             }
         }
         /*
@@ -340,8 +334,6 @@ public class MetaGraph {
      * @param terminus The terminal node that was found
      */
     private void prune(Node terminus) {
-        HashMap<String, Double> endState = terminus.getAttribute("state");
-
         // Find the terminal node's parents
         ArrayList<Node> parents = new ArrayList<>();
         for (Edge edge : terminus.getEachEnteringEdge()) {
@@ -381,11 +373,10 @@ public class MetaGraph {
 
     /**
      * Returns a list of all nbrs that can be reached from n
-     * @param g The graph to work with
      * @param n The source node
      * @return A list of reachable nbrs
      */
-    private ArrayList<Node> getOutgoingNbrs(Graph g, Node n) {
+    private ArrayList<Node> getOutgoingNbrs(Node n) {
         ArrayList<Node> nbrs = new ArrayList<>();
 
         for (Edge e : n.getEachLeavingEdge()) {
