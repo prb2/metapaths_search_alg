@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Representation of the MetaGraph
+ * Creation and representation of the MetaGraph
  */
 public class MetaGraph {
     /* Input graph of metabolic reations */
@@ -70,6 +70,8 @@ public class MetaGraph {
         input.getEdge("TargetSelf").setAttribute("capacity", Double.MAX_VALUE);
     }
 
+    /********** Graph **********/
+
     /**
      * Fills the metagraph with metanodes by searching for neighbors
      * of existing metanodes, initially only the start metanode
@@ -98,27 +100,23 @@ public class MetaGraph {
             } else {
                 // If metanbrs were found, add them to the metagraph
                 for (HashMap<String, Double> state : nbrStates) {
-                    // TODO: Should this validity check exist? It seems better
-                    // TODO: to have only valid states be returned by findNbrs
-                    if (isValid(state)) {
-                        // Add the neighboring node and store the state
-                        meta.addNode(state.toString());
-                        Node nbr = meta.getNode(state.toString());
-                        nbr.setAttribute("state", state);
+                    // Add the neighboring node and store the state
+                    meta.addNode(state.toString());
+                    Node nbr = meta.getNode(state.toString());
+                    nbr.setAttribute("state", state);
 
-                        // Add a directed edge from current to nbr
-                        meta.addEdge(current.toString() + " -> " + nbr.toString(),
-                                current, nbr, true);
+                    // Add a directed edge from current to nbr
+                    meta.addEdge(current.toString() + " -> " + nbr.toString(),
+                            current, nbr, true);
 
-                        if (stopOnTarget && isTarget(nbr)) {
-                            // Stop neighbor search since target was found
-                            break;
-                        } else {
-                            if (!visited.contains(nbr)) {
-                                // If nbr hasn't been seen, push it onto the stack for exploration
-                                known.push(nbr);
-                                visited.add(nbr);
-                            }
+                    if (stopOnTarget && isTarget(nbr)) {
+                        // Stop neighbor search since target was found
+                        break;
+                    } else {
+                        if (!visited.contains(nbr)) {
+                            // If nbr hasn't been seen, push it onto the stack for exploration
+                            known.push(nbr);
+                            visited.add(nbr);
                         }
                     }
                 }
@@ -126,14 +124,17 @@ public class MetaGraph {
         }
     }
 
-    // TODO: Try and get rid of the need for this
-    private boolean isValid(HashMap<String, Double> state) {
-        double total = 0;
-        for (double val : state.values()) {
-            total += val;
-        }
-        return total == flow;
+    /**
+     * Writes the metagraph to a .dot file in the graphs directory
+     * @param filename The name of the written file
+     * @throws IOException
+     */
+    public void writeToFile(String filename) throws IOException {
+        FileSink fs = new FileSinkDOT();
+        fs.writeAll(meta, "graphs/" + filename + ".dot");
     }
+
+    /********** Meta Neighbor Search **********/
 
     /**
      * Finds all possible metanbrs of input metanode
@@ -144,7 +145,7 @@ public class MetaGraph {
         // Easily access the current metanode's state
         HashMap<String, Double> currentState = current.getAttribute("state");
 
-        /**
+        /*
          * A partial state is map of similar form to a regular state/metanode,
          * with the exception that the partial state only accounts for the potential
          * flow move of one inner node (not the total that we're working with).
@@ -175,39 +176,182 @@ public class MetaGraph {
                 continue;
             }
         }
+        /*
+         * At this point, partialState maps each inner node of current to a list
+         * of partial states indicating where the flow at each inner node could
+         * be moved to
+         */
         // Combine the found partials into all combinations of valid flow moves from this current state
         return generateCompleteStates(partialStates);
     }
 
+    /**
+     * This function recursively distributes the flow residing at the parent node.
+     * @param n The amount of flow that needs to be distributed
+     * @param parent The node from input graph which is the source of flow
+     * @param nbrs Neighbors of parent, that must receive remaining flow
+     * @param j The jth nbr to move flow to
+     * @return A list of partial states, each of which maps the jth nbr of parent
+     *         to the various amounts of flow that it can be moved to that nbr
+     */
+    private ArrayList<HashMap<String, Double>> recursiveNbrSearch(double n, Node parent, ArrayList<Node> nbrs, int j) {
+        /* List of all possible flow moves from parent to the jth nbr */
+        ArrayList<HashMap<String, Double>> states = new ArrayList<>();
+
+        // If there are nbrs left
+        if (j >= 0) {
+            Node nbr = nbrs.get(j);
+            /**
+             * For the jth nbr of parent, generate the all possible partial states
+             * by incrementing flow until either the capacity of the edge is
+             * reached, or all flow has been distributed.
+             */
+            for (double i = 0; i <= Math.min(n, capacity(parent, nbr)); i++) {
+                HashMap<String, Double>  partialState = new HashMap<>();
+
+                // If 0 flow, don't include in the state
+                if (i != 0.0) {
+                    // Move i amount of flow to this nbr
+                    partialState.put(nbr.getId(), i);
+                }
+
+                // Check if any flow remains after moving i flow to jth nbr
+                if (n - i > 0) {
+                    // Distribute the remaining flow among the remaining nbrs
+                    ArrayList<HashMap<String, Double>> foundStates = recursiveNbrSearch(n - i, parent, nbrs, j - 1);
+
+                    // Merge the flow move to this nbr with each possible move of the remaining flow to remaining nbrs
+                    for (HashMap<String, Double> state : foundStates) {
+                        HashMap<String, Double> mergedState = mergePartialStates(partialState, state);
+                        states.add(mergedState);
+                    }
+                } else {
+                    // If no flow remains, add this partial state and return
+                    states.add(partialState);
+                }
+            }
+        }
+
+        // Return the list of partials states possible when moving n flow to j nbrs
+        return states;
+    }
+
+    /**
+     * This functions simply merges two maps. If there is key overlap, the values are added
+     * @param partialState1 The first state to merge
+     * @param partialState2 The seconds state to merge
+     * @return The resulting merged state
+     */
+    private HashMap<String, Double> mergePartialStates(HashMap<String, Double> partialState1, HashMap<String, Double> partialState2) {
+        HashMap<String, Double> merged = new HashMap<>();
+        // Copy over the first state into the merged state
+        merged.putAll(partialState1);
+
+        // Copy over the second state, while checking for overlap
+        for (String key : partialState2.keySet()) {
+            if (merged.containsKey(key)) {
+                // If there is key overlap, add the values
+                merged.put(key, merged.get(key) + partialState2.get(key));
+            } else {
+                // If no overlap, simply copy over the value
+                merged.put(key, partialState2.get(key));
+            }
+        }
+
+        return merged;
+    }
+
+    /**
+     * Finds all possible nbrs by combining partial states to form valid,
+     * complete states
+     * @param partialStates The mapping of inner nodes to partial states
+     * @return A list of valid neighboring states
+     */
+    private ArrayList<HashMap<String, Double>> generateCompleteStates(HashMap<String, ArrayList<HashMap<String, Double>>> partialStates) {
+        ArrayList<ArrayList<HashMap<String, Double>>> listOfPartialStateLists = new ArrayList<>();
+
+        /*
+         * Reorganize the map of partial state lists into a list of lists.
+         * Each index of the outer list corresponds to a inner nbr and the list
+         * at that index contains the partial states possible for that inner nbr
+         */
+        for (ArrayList<HashMap<String, Double>> list : partialStates.values()) {
+            listOfPartialStateLists.add(list);
+        }
+
+        ArrayList<HashMap<String, Double>> potentialStates =
+                recursiveStateAccumulator(listOfPartialStateLists);
+
+        ArrayList<HashMap<String, Double>> validStates = new ArrayList<>();
+
+        for (HashMap<String, Double> state : potentialStates) {
+            if (isValid(state)) {
+                validStates.add(state);
+            }
+        }
+
+        return validStates;
+    }
+
+    /**
+     * Enumerates all combinations of nbrs by recursively picking a flow move
+     * (partial state) from each inner nbr and combining them to form a complete state
+     * which accounts for all the flow the needs to be moved between metanodes
+     * @param valueLists List of lists of partial states. Each index of the
+     *        outer list corresponds to a inner nbr and the list at that
+     *        index contains the partial states possible for that inner nbr
+     * @return A list of states as a result of trying all possible moves of
+     * flow for all inner nbrs. Some of these states may not be valid, in the
+     * case that all required flow was not moved due to capacity constraints when
+     * the partial states were intially created.
+     */
+    private ArrayList<HashMap<String, Double>> recursiveStateAccumulator(ArrayList<ArrayList<HashMap<String, Double>>> valueLists) {
+        ArrayList<HashMap<String, Double>> merged = new ArrayList<>();
+        if (valueLists.size() == 0) {
+            return merged;
+        } else if (valueLists.size() == 1) {
+            return valueLists.get(0);
+        } else {
+            ArrayList<HashMap<String, Double>> current = valueLists.remove(0);
+            ArrayList<HashMap<String, Double>> rest = recursiveStateAccumulator(valueLists);
+
+            for (HashMap<String, Double> currentPartial : current) {
+                for (HashMap<String, Double> restPartial : rest) {
+                    HashMap<String, Double> newState = mergePartialStates(currentPartial, restPartial);
+                    merged.add(newState);
+                }
+            }
+
+            return merged;
+        }
+    }
+
+    /********** Pruning **********/
 
     /**
      * Modifes the metagraph so that terminal branches are removed
      * @param terminus The terminal node that was found
      */
     private void prune(Node terminus) {
-
+        // TODO: Implement
     }
+
+    /********** Utilities **********/
 
     /**
-     * Tests whether the input metanode is the target metanode
-     * @param node The metanode to test
-     * @return Whether the node is in fact the target
+     * Looks up the capacity of the edge between two nodes in the input graph
+     * @param parent Source node
+     * @param node Target node
+     * @return The capacity of the source-target edge
      */
-    private boolean isTarget(Node node) {
-        String state = node.getAttribute("state");
-        String target = targetState.toString();
-        return state.equals(target);
+    private double capacity(Node parent, Node node) {
+        if (parent.getId().equals(node.getId())) {
+            return Double.MAX_VALUE;
+        } else {
+            Edge nbrEdge = parent.getEdgeToward(node);
+            return nbrEdge.getAttribute("capacity");
+        }
     }
-
-
-
-
-
-
-
-
-
-
 
     /**
      * Returns a list of all nbrs that can be reached from n
@@ -226,109 +370,30 @@ public class MetaGraph {
     }
 
     /**
-     * This function recursively distributes the flow residing at the parent node.
-     * @param n The amount of flow that needs to be distributed
-     * @param parent The node from input graph which is the source of flow
-     * @param nbrs Neighbors of parent, that must receive remaining flow
-     * @param j The jth nbr to move flow to
-     * @return A list of partial states, each of which maps the jth nbr of parent
-     *         to the various amounts of flow that it can be moved to that nbr
+     * Tests whether the input metanode is the target metanode
+     * @param node The metanode to test
+     * @return Whether the node is in fact the target
      */
-    private ArrayList<HashMap<String, Double>> recursiveNbrSearch(double n, Node parent, ArrayList<Node> nbrs, int j) {
-        /* List of all possible flow moves from parent to the jth nbr */
-        ArrayList<HashMap<String, Double>> states = new ArrayList<>();
-
-        // If there are nbrs left
-        if (j >= 0) {
-            // 1. for each inner node in current's state, generate the possible partial states
-            Node nbr = nbrs.get(j);
-            for (double i = 0; i <= Math.min(n, capacity(parent, nbr)); i++) {
-                HashMap<String, Double>  partialState = new HashMap<>();
-                // move i flow to this nbr
-//                System.out.println("Moving i=" + i + " flow to nbr: " + nbr);
-
-                if (i != 0.0) {
-                    // if 0 flow, don't include in the state
-                    partialState.put(nbr.getId(), i);
-                }
-
-                // allocate the remaining flow for the remaining nbrs
-                ArrayList<HashMap<String, Double>> foundStates = recursiveNbrSearch(n - i, parent, nbrs, j - 1);
-//                System.out.println("Found rec. partial states: " + foundStates);
-
-                // Check if flow was distributed to any of the other nbrs
-                if (foundStates.size() == 0) {
-                    states.add(partialState);
-                } else {
-                    for (HashMap<String, Double> state : foundStates) {
-                        // merge the flow move to this nbr with flow that went to the other nbrs
-                        HashMap<String, Double> mergedState = mergePartialStates(partialState, state);
-                        states.add(mergedState);
-//                        System.out.println("Found partial state: " + mergedState);
-                    }
-                }
-            }
-        }
-
-        return states;
-    }
-
-    private HashMap<String, Double> mergePartialStates(HashMap<String, Double> partialState1, HashMap<String, Double> partialState2) {
-        HashMap<String, Double> merged = new HashMap<>();
-        merged.putAll(partialState1);
-        for (String key : partialState2.keySet()) {
-            if (merged.containsKey(key)) {
-                merged.put(key, merged.get(key) + partialState2.get(key));
-            } else {
-                merged.put(key, partialState2.get(key));
-            }
-        }
-        return merged;
-    }
-
-    private ArrayList<HashMap<String, Double>> generateCompleteStates(HashMap<String, ArrayList<HashMap<String, Double>>> partialStates) {
-        ArrayList<ArrayList<HashMap<String, Double>>> listOfPartialStateLists = new ArrayList<>();
-        for (ArrayList<HashMap<String, Double>> list : partialStates.values()) {
-            listOfPartialStateLists.add(list);
-        }
-
-        return recursiveStateAccumulator(listOfPartialStateLists);
+    private boolean isTarget(Node node) {
+        String state = node.getAttribute("state");
+        String target = targetState.toString();
+        return state.equals(target);
     }
 
     /**
-     *
-     * @param valueLists
-     * @return
+     * Determines whether a state is valid by check that the sum of all flow in
+     * the state exactly equals the user input flow.
+     * @param state The state to test
+     * @return Whether the state is valid or not
      */
-    private ArrayList<HashMap<String, Double>> recursiveStateAccumulator(ArrayList<ArrayList<HashMap<String, Double>>> valueLists) {
-        ArrayList<HashMap<String, Double>> merged = new ArrayList<>();
-        if (valueLists.size() == 0) {
-            return merged;
-        } else if (valueLists.size() == 1) {
-            return valueLists.get(0);
-        } else {
-            ArrayList<HashMap<String, Double>> current = valueLists.remove(0);
-            ArrayList<HashMap<String, Double>> rest = recursiveStateAccumulator(valueLists);
-            for (HashMap<String, Double> currentPartial : current) {
-                for (HashMap<String, Double> restPartial : rest) {
-                    merged.add(mergePartialStates(currentPartial, restPartial));
-                }
-            }
-            return merged;
-        }
-    }
+    private boolean isValid(HashMap<String, Double> state) {
+        double total = 0;
 
-    private double capacity(Node parent, Node node) {
-        if (parent.getId().equals(node.getId())) {
-            return Double.MAX_VALUE;
-        } else {
-            Edge nbrEdge = parent.getEdgeToward(node);
-            return nbrEdge.getAttribute("capacity");
+        // Sum up the flow at each inner node
+        for (double val : state.values()) {
+            total += val;
         }
-    }
 
-    public void writeToFile(String filename) throws IOException {
-        FileSink fs = new FileSinkDOT();
-        fs.writeAll(meta, "graphs/" + filename + ".dot");
+        return total == flow;
     }
 }
