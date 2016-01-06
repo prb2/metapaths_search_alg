@@ -35,7 +35,7 @@ public class MetaRun {
 //        run(g, start, target, flow, g.getId(), true);
         MetaGraph mg = new MetaGraph(g, input, start, target, flow);
         mg.populate(false, true);
-        mg.writeToFile("newwww1");
+        mg.writeToFile("new");
     }
 
 //    public static void run(Graph g, String start, String target, int desiredFlow, String graphName, boolean pruning) {
