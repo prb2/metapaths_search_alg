@@ -130,10 +130,7 @@ public class MetaGraph {
     }
 
     public void populate(boolean stopOnTarget, boolean enablePruning, boolean timed) {
-        long startTime = System.nanoTime();
         populate(stopOnTarget, enablePruning);
-        long elapsed = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime);
-        System.out.println("\t Metagraph population took: " + elapsed + " milliseconds.");
     }
 
     /**
@@ -403,7 +400,11 @@ public class MetaGraph {
     private boolean isTarget(Node node) {
         String state = node.getAttribute("state").toString();
         String target = targetState.toString();
-        return state.equals(target);
+        boolean check = state.equals(target);
+        if (check == true) {
+            System.out.println("Found target state: " + state);
+        }
+        return check;
     }
 
     /**
