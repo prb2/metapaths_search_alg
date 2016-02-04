@@ -10,6 +10,8 @@ movement of atoms through the pathway's reactions is modeled as the movement of
 flow through a directed graph. Applications for this work include metabolic
 engineering, as well as more general flow movement problems.
 
+##### This project has moved to the [Kavraki Lab Repository](https://github.com/KavrakiLab) and will continue to be developed there.
+
 ## Overview
 
 ### Generalized Algorithm
